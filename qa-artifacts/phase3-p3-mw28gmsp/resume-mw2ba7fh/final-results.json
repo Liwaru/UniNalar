@@ -1,0 +1,644 @@
+{
+  "run": "p3-mw28gmsp",
+  "verification_date": "2026-11-04",
+  "sqlite": {
+    "tests": 67,
+    "assertions": 874,
+    "status": "PASS"
+  },
+  "mysql": {
+    "tests": 18,
+    "assertions": 125,
+    "status": "PASS",
+    "concurrency_cases": 7
+  },
+  "safety": {
+    "identity": {
+      "db": "uninalar",
+      "version": "8.4.11",
+      "uuid": "356268fd-cbd1-11f1-bdbf-aa299b87e940"
+    },
+    "migrationPending": true,
+    "tables": [
+      {
+        "table": "users",
+        "count": 4,
+        "unchanged": true
+      },
+      {
+        "table": "program_studi",
+        "count": 1,
+        "unchanged": true
+      },
+      {
+        "table": "dosen",
+        "count": 2,
+        "unchanged": true
+      },
+      {
+        "table": "mahasiswa",
+        "count": 40,
+        "unchanged": true
+      },
+      {
+        "table": "semester",
+        "count": 1,
+        "unchanged": true
+      },
+      {
+        "table": "mata_kuliah",
+        "count": 6,
+        "unchanged": true
+      },
+      {
+        "table": "kelas_kuliah",
+        "count": 6,
+        "unchanged": true
+      },
+      {
+        "table": "krs",
+        "count": 40,
+        "unchanged": true
+      },
+      {
+        "table": "krs_detail",
+        "count": 120,
+        "unchanged": true
+      },
+      {
+        "table": "nilai",
+        "count": 120,
+        "unchanged": true
+      },
+      {
+        "table": "kehadiran",
+        "count": 120,
+        "unchanged": true
+      },
+      {
+        "table": "analisis_risiko",
+        "count": 80,
+        "unchanged": true
+      },
+      {
+        "table": "faktor_risiko",
+        "count": 80,
+        "unchanged": true
+      },
+      {
+        "table": "rekomendasi_intervensi",
+        "count": 80,
+        "unchanged": true
+      },
+      {
+        "table": "tindak_lanjut",
+        "count": 80,
+        "unchanged": true
+      },
+      {
+        "table": "migrations",
+        "count": 6,
+        "unchanged": true
+      }
+    ],
+    "unchanged": true
+  },
+  "crud": [
+    {
+      "slug": "program-studi",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    },
+    {
+      "slug": "semester",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    },
+    {
+      "slug": "mata-kuliah",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    },
+    {
+      "slug": "dosen",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    },
+    {
+      "slug": "mahasiswa",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    },
+    {
+      "slug": "kelas-kuliah",
+      "duplicate": true,
+      "editSaved": true,
+      "error": 0
+    }
+  ],
+  "protected_deletions": [
+    {
+      "slug": "program-studi",
+      "error": "Program studi masih memiliki profil mahasiswa."
+    },
+    {
+      "slug": "semester",
+      "error": "Semester masih digunakan oleh kelas kuliah.",
+      "retained": 1
+    },
+    {
+      "slug": "mata-kuliah",
+      "error": "Mata kuliah masih digunakan oleh kelas kuliah.",
+      "retained": 1
+    },
+    {
+      "slug": "dosen",
+      "error": "Profil dosen masih ditugaskan pada kelas kuliah.",
+      "retained": 1
+    },
+    {
+      "slug": "mahasiswa",
+      "error": "Profil mahasiswa masih memiliki catatan KRS.",
+      "retained": 1
+    },
+    {
+      "slug": "kelas-kuliah",
+      "error": "Kelas masih digunakan oleh KRS dan tidak dapat dihapus.",
+      "retained": 1
+    }
+  ],
+  "free_crud": [
+    {
+      "slug": "program-studi",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "18"
+    },
+    {
+      "slug": "semester",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "17"
+    },
+    {
+      "slug": "mata-kuliah",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "19"
+    },
+    {
+      "slug": "dosen",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "18"
+    },
+    {
+      "slug": "mahasiswa",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "26"
+    },
+    {
+      "slug": "kelas-kuliah",
+      "invalid": true,
+      "deletedMessage": true,
+      "id": "19"
+    }
+  ],
+  "pagination": [
+    {
+      "slug": "program-studi",
+      "first": 15,
+      "second": 1,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    },
+    {
+      "slug": "semester",
+      "first": 15,
+      "second": 1,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    },
+    {
+      "slug": "mata-kuliah",
+      "first": 15,
+      "second": 3,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    },
+    {
+      "slug": "dosen",
+      "first": 15,
+      "second": 2,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    },
+    {
+      "slug": "mahasiswa",
+      "first": 15,
+      "second": 9,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    },
+    {
+      "slug": "kelas-kuliah",
+      "first": 15,
+      "second": 3,
+      "empty": true,
+      "searchRows": 1,
+      "demoVisible": false
+    }
+  ],
+  "journey": {
+    "rejected": true,
+    "history": [
+      "Versi 2 · Menunggu04/11/2026 21:58\n                        TI101 · Algoritma dan Pemrograman · 3 SKSTI102 · Matematika Diskrit · 2 SKS\n                                            ",
+      "Versi 1 · Ditolak04/11/2026 21:57\n                        TI101 · Algoritma dan Pemrograman · 3 SKS\n                        Tambahkan mata kuliah Matematika Diskrit sesuai rencana studi yang ditinjau.                    "
+    ],
+    "approved": true
+  },
+  "grades": {
+    "stale": "Nilai telah berubah sejak halaman dibuka. Muat ulang sebelum menyimpan kembali.",
+    "retained": "90.00",
+    "remainingEditable": 0,
+    "studentGrades": "Selamat siang,\nNilai Akademik\n\nNilai yang tercatat untuk mata kuliah Anda.\n\nSemester\tMata kuliah\tKode\tNilai angka\tHuruf\tMutu\tStatus\n2026-GANJIL\tMatematika Diskrit\tTI102\t78.00\tB\t3.00\tFinal\n2026-GANJIL\tAlgoritma dan Pemrograman\tTI101\t90.00\tA\t4.00\tFinal\n\nInformasi akademik berasal dari catatan database profil Anda. Skor risiko mengikuti analisis yang tercatat dan bukan keputusan otomatis."
+  },
+  "security": {
+    "csrf": 419,
+    "searchEmpty": true,
+    "ownership": 404,
+    "leaked": false,
+    "forbidden": 403,
+    "profile": "Profil Saya"
+  },
+  "adversarial": {
+    "massStatus": 302,
+    "roleEscalationDenied": 403,
+    "finalEdit": 422
+  },
+  "session": {
+    "staleSessionStatus": 302,
+    "intendedUrl": "http://127.0.0.1:8094/dashboard/mahasiswa/nilai",
+    "sessionChanged": true,
+    "title": "Nilai Akademik · UniNalar"
+  },
+  "ui_retest": {
+    "unchecked": true,
+    "creditsBlocked": true,
+    "adminEmailBlocked": true,
+    "studentEmailBlocked": true,
+    "ipk": "IPK: 3.60",
+    "attendance": true,
+    "overflow": false,
+    "labelColor": "rgb(100, 116, 139)"
+  },
+  "role_responsive": {
+    "total": 64,
+    "problems": [],
+    "errors": [],
+    "failed": []
+  },
+  "student_responsive": {
+    "checks": [
+      {
+        "slug": "dashboard",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 0
+      },
+      {
+        "slug": "krs",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "nilai",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "kehadiran",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "analisis-risiko",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "rekomendasi",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "tindak-lanjut",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "profil",
+        "status": 200,
+        "width": 375,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "dashboard",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 0
+      },
+      {
+        "slug": "krs",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "nilai",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "kehadiran",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "analisis-risiko",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "rekomendasi",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "tindak-lanjut",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "profil",
+        "status": 200,
+        "width": 768,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "dashboard",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 0
+      },
+      {
+        "slug": "krs",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "nilai",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "kehadiran",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "analisis-risiko",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "rekomendasi",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "tindak-lanjut",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "profil",
+        "status": 200,
+        "width": 1366,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "dashboard",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 0
+      },
+      {
+        "slug": "krs",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "nilai",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "kehadiran",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "analisis-risiko",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "rekomendasi",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "tindak-lanjut",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      },
+      {
+        "slug": "profil",
+        "status": 200,
+        "width": 1920,
+        "overflow": false,
+        "active": 1
+      }
+    ]
+  },
+  "contrast": {
+    "labels": [
+      {
+        "text": "Ruang Mahasiswa",
+        "color": "rgb(100, 116, 139)",
+        "ratio": 4.758842787868666
+      },
+      {
+        "text": "Menu utama",
+        "color": "rgb(100, 116, 139)",
+        "ratio": 4.758842787868666
+      },
+      {
+        "text": "Mahasiswa",
+        "color": "rgb(100, 116, 139)",
+        "ratio": 4.758842787868666
+      }
+    ],
+    "checks": [
+      {
+        "width": 375,
+        "height": 812,
+        "overflow": false
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "overflow": false
+      },
+      {
+        "width": 1366,
+        "height": 768,
+        "overflow": false
+      },
+      {
+        "width": 1920,
+        "height": 1080,
+        "overflow": false
+      }
+    ]
+  },
+  "intended_login": {
+    "url": "http://127.0.0.1:8094/dashboard/admin-akademik",
+    "title": "Admin Akademik · UniNalar"
+  },
+  "performance": {
+    "artisan_ms": {
+      "linux": [
+        372.0766,
+        288.1967,
+        304.3328,
+        296.0627
+      ],
+      "windows": [
+        6942.9445,
+        6469.9695,
+        7002.3569,
+        6648.8519
+      ]
+    },
+    "chrome_warm": {
+      "lcp_ms": [
+        5661,
+        5415,
+        2874
+      ],
+      "ttfb_ms": [
+        5330,
+        5043,
+        2532
+      ],
+      "cls": [
+        0.01,
+        0.01,
+        0.01
+      ]
+    },
+    "chrome_cache_bypass": {
+      "lcp_ms": 2584,
+      "ttfb_ms": 2194,
+      "cls": 0.01
+    },
+    "controlled_http_first_observed_ms": {
+      "linux": 35.081,
+      "windows": 6996.083
+    },
+    "controlled_http_subsequent_ms": {
+      "linux": [
+        24.382,
+        20.901,
+        24.969
+      ],
+      "windows": [
+        5767.666,
+        2460.401,
+        2130.549
+      ]
+    },
+    "notes": [
+      "First observed HTTP sample is not a proven cold filesystem/server start.",
+      "No operational filesystem relocation or configuration optimization applied.",
+      "Historical Phase 2 and current results vary; no whole-application speedup claim."
+    ]
+  }
+}

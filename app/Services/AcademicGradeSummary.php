@@ -13,21 +13,32 @@ class AcademicGradeSummary
     /** @return array{ips: ?float, ips_semester: ?string, ipk: ?float, final_count: int} */
     public function forStudent(Mahasiswa $student): array
     {
-        if (! Schema::hasTable('nilai') || ! Schema::hasColumn('nilai', 'final_at')) {
-            return ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
+        return $this->forStudents(collect([$student]))[$student->id];
+    }
+
+    /** One grade query for all selected students, avoiding a query per student. */
+    public function forStudents(Collection $students): Collection
+    {
+        $empty = ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
+        if ($students->isEmpty() || ! Schema::hasTable('nilai') || ! Schema::hasColumn('nilai', 'final_at')) {
+            return $students->mapWithKeys(fn ($student) => [$student->id => $empty]);
         }
 
         $grades = Nilai::query()->whereNotNull('final_at')
-            ->whereHas('krsDetail.krs', fn (Builder $krs) => $krs
-                ->where('mahasiswa_id', $student->id)
-                ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
-                ->whereHas('mahasiswa', fn (Builder $profile) => $profile->where('nim', 'not like', 'DEMO%')
-                    ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
-            ->whereHas('krsDetail.kelasKuliah.mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
-                ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
+            ->whereIn('krs_detail_id', OperationalAcademicData::approvedDetails()
+                ->whereHas('krs', fn (Builder $krs) => $krs->whereIn('mahasiswa_id', $students->pluck('id')))
+                ->select('krs_detail.id'))
             ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
-            ->orderByDesc('final_at')->orderByDesc('id')->get();
+            ->orderByDesc('final_at')->orderByDesc('id')->get()
+            ->groupBy(fn (Nilai $grade) => $grade->krsDetail->krs->mahasiswa_id);
 
+        return $students->mapWithKeys(fn ($student) => [
+            $student->id => isset($grades[$student->id]) ? $this->summarize($grades[$student->id]) : $empty,
+        ]);
+    }
+
+    private function summarize(Collection $grades): array
+    {
         $valid = $grades->filter(fn (Nilai $grade) => $this->points($grade) !== null
             && (int) ($grade->krsDetail?->kelasKuliah?->mataKuliah?->sks ?? 0) > 0)->values();
         $bySemester = $valid->filter(fn (Nilai $grade) => $grade->krsDetail?->krs?->semester !== null)
@@ -64,6 +75,9 @@ class AcademicGradeSummary
 
     private function points(Nilai $grade): ?float
     {
+        if ($grade->nilai_angka !== null && ((float) $grade->nilai_angka < 0 || (float) $grade->nilai_angka > 100)) {
+            return null;
+        }
         $letter = strtoupper(trim((string) $grade->nilai_huruf));
         $configured = config('academic.grade_points', []);
         if ($letter === '' || ! array_key_exists($letter, $configured)) {

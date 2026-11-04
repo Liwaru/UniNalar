@@ -20,6 +20,12 @@
     max-width: 1180px;
 }
 
+/* Bootstrap controls collapse display; Tailwind's same-name visibility utility
+   must not hide an expanded Bootstrap navigation menu. */
+@layer tailwind-utilities {
+    .site-header #mainNavigation { visibility: visible; }
+}
+
 @layer landing {
     :root {
         --un-navy: #14213d;
@@ -43,7 +49,7 @@
     }
 
     html { scroll-behavior: smooth; }
-    #beranda, #fitur, #cara-kerja, #tentang { scroll-margin-top: 90px; }
+    #beranda, #fitur, #cara-kerja, #tentang, #transparansi, #dashboard, #cta { scroll-margin-top: 90px; }
 
     .landing-page *, .landing-page *::before, .landing-page *::after { box-sizing: border-box; }
     .landing-page a { text-decoration: none; }
@@ -53,7 +59,7 @@
 
     .site-header { position: sticky; z-index: 10; top: 0; background: rgba(255, 255, 255, .91); border-bottom: 1px solid rgba(230, 235, 242, .8); backdrop-filter: blur(18px); }
     .site-header .navbar { min-height: 78px; padding: 10px 0; }
-    .brand-lockup { display: inline-flex; align-items: center; padding: 0; }
+    .brand-lockup { display: inline-flex; flex-shrink: 0; align-items: center; padding: 0; }
     .brand-lockup img { width: 174px; height: auto; }
     .site-header .nav-link { position: relative; padding: 12px 14px !important; color: #58657a; font-size: 13px; font-weight: 600; transition: color .18s ease; }
     .site-header .nav-link::after { position: absolute; right: 14px; bottom: 5px; left: 14px; height: 2px; transform: scaleX(0); transform-origin: left center; border-radius: 2px; background: var(--un-blue); content: ''; transition: transform .18s ease; }
@@ -279,6 +285,8 @@
     .footer-bottom { justify-content: flex-start; gap: 0; padding-top: 17px; border-top: 1px solid #edf0f4; color: #a0a9b6; font-size: 8px; }
 
     @media (max-width: 991.98px) {
+        .landing-container > .row.g-5 { --bs-gutter-x: 1.5rem; }
+        .site-header .navbar-collapse .landing-btn-nav { margin: 2px 0 10px; }
         .site-header .navbar-collapse { padding: 12px 0 8px; }
         .site-header .navbar-nav { align-items: stretch !important; margin-left: 0 !important; padding-bottom: 10px; }
         .site-header .nav-link { padding-left: 0 !important; }

@@ -18,6 +18,7 @@
             @if ($search !== '')<a class="admin-clear" href="{{ route($config['route'].'.index') }}">Hapus pencarian</a>@endif
         </form>
 
+        @if ($errors->any())<div class="admin-alert error" role="alert">@foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
         <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead><tr>@foreach ($config['columns'] as $label)<th scope="col">{{ $label }}</th>@endforeach<th scope="col">Aksi</th></tr></thead>
@@ -29,6 +30,7 @@
                                 <td>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
                             @endforeach
                             <td><div class="admin-row-actions">
+                                @if ($config['show'] ?? false)<a href="{{ route($config['route'].'.show', $record) }}">Detail</a>@endif
                                 <a href="{{ route($config['route'].'.edit', $record) }}">Ubah</a>
                                 <form method="POST" action="{{ route($config['route'].'.destroy', $record) }}" onsubmit="return confirm('Hapus data ini?')">
                                     @csrf @method('DELETE')

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AnalisisRisiko;
 use App\Models\Krs;
 use App\Models\Mahasiswa;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
@@ -25,6 +26,8 @@ class MahasiswaOperationalData
         $isDemoProfile = $profile !== null && (
             str_starts_with(strtoupper($profile->nim), 'DEMO')
             || str_ends_with(strtoupper($profile->programStudi?->kode ?? ''), '-DEMO')
+            || str_ends_with(strtolower((string) $user->email), '@demo.uninlar.test')
+            || str_ends_with(strtolower((string) $profile->email), '@demo.uninlar.test')
         );
 
         if ($isDemoProfile) {
@@ -50,7 +53,7 @@ class MahasiswaOperationalData
     public function activeSemester()
     {
         return Schema::hasTable('semester')
-            ? \App\Models\Semester::query()
+            ? Semester::query()
                 ->where('aktif', true)
                 ->where('kode', 'not like', 'DEMO%')
                 ->orderByDesc('tanggal_mulai')
@@ -66,16 +69,7 @@ class MahasiswaOperationalData
 
     public function scopeKrs(Builder $query, int $mahasiswaId): Builder
     {
-        return $query
-            ->where('mahasiswa_id', $mahasiswaId)
-            ->whereHas('semester', fn ($semester) => $semester->where('kode', 'not like', 'DEMO%'))
-            ->whereDoesntHave('details.kelasKuliah.mataKuliah', function ($course): void {
-                $course->where('kode', 'like', 'DEMO%');
-
-                if (Schema::hasTable('program_studi')) {
-                    $course->orWhereHas('programStudi', fn ($program) => $program->where('kode', 'like', '%-DEMO'));
-                }
-            });
+        return OperationalAcademicData::scopeKrs($query)->where('mahasiswa_id', $mahasiswaId);
     }
 
     public function analysisQuery(int $mahasiswaId): Builder
@@ -85,20 +79,6 @@ class MahasiswaOperationalData
 
     public function scopeAnalysis(Builder $query, int $mahasiswaId): Builder
     {
-        $query->where('mahasiswa_id', $mahasiswaId);
-
-        if (Schema::hasTable('semester')) {
-            $query->where(function (Builder $scope): void {
-                $scope->whereNull('semester_id')
-                    ->orWhereHas('semester', fn ($semester) => $semester->where('kode', 'not like', 'DEMO%'));
-            });
-        } else {
-            $query->whereNull('semester_id');
-        }
-
-        return $query->where(function (Builder $scope): void {
-                $scope->whereNull('versi_model')
-                    ->orWhere('versi_model', 'not like', 'demo%');
-            });
+        return OperationalAcademicData::scopeAnalysis($query)->where('mahasiswa_id', $mahasiswaId);
     }
 }

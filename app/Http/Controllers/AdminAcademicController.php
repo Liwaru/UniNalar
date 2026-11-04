@@ -8,12 +8,15 @@ use App\Models\MataKuliah;
 use App\Models\ProgramStudi;
 use App\Models\Semester;
 use App\Models\User;
+use App\Services\OperationalAcademicData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminAcademicController extends Controller
@@ -71,8 +74,20 @@ class AdminAcademicController extends Controller
     public function update(Request $request, string $record): RedirectResponse
     {
         $config = $this->resourceConfig();
-        $model = $this->operationalQuery($config)->findOrFail($record);
-        $model->update($this->validatedData($request, $config, $model));
+        DB::transaction(function () use ($request, $record, $config): void {
+            $model = $this->operationalQuery($config)->lockForUpdate()->findOrFail($record);
+            $values = $this->validatedData($request, $config, $model);
+            if ($config['key'] === 'mata-kuliah' && (int) $values['sks'] !== (int) $model->sks) {
+                // Serialize with registration's class locks before checking current
+                // detail rows; an older REPEATABLE READ snapshot is insufficient.
+                $classIds = $model->kelasKuliah()->orderBy('id')->lockForUpdate()->pluck('id');
+                $used = DB::table('krs_detail')->whereIn('kelas_kuliah_id', $classIds)->lockForUpdate()->first();
+                if ($used) {
+                    throw ValidationException::withMessages(['sks' => 'SKS mata kuliah yang sudah digunakan KRS tidak dapat diubah agar riwayat akademik tetap konsisten.']);
+                }
+            }
+            $model->update($values);
+        }, 3);
 
         return redirect()->route($config['route'].'.index')->with('status', $config['label'].' berhasil diperbarui.');
     }
@@ -143,6 +158,9 @@ class AdminAcademicController extends Controller
 
         if (in_array($config['key'], ['dosen', 'mahasiswa'], true)) {
             $table = $config['key'];
+            // The operational listing deliberately excludes this reserved domain.
+            // Reject it at entry rather than reporting success for an invisible record.
+            $rules['email'] .= '|not_regex:/@demo\.uninlar\.test$/i';
             $requiredLevel = $table === 'dosen' ? User::ROLE_DOSEN : User::ROLE_MAHASISWA;
             $rules['user_id'] = [
                 'nullable',
@@ -176,7 +194,9 @@ class AdminAcademicController extends Controller
             }
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, [
+            'email.not_regex' => 'Domain email tersebut khusus data demo dan tidak dapat digunakan untuk profil operasional.',
+        ]);
 
         foreach (['krs_mulai_pada', 'krs_selesai_pada'] as $field) {
             if (isset($data[$field])) {
@@ -199,11 +219,8 @@ class AdminAcademicController extends Controller
             'program-studi' => $query->where('kode', 'not like', '%-DEMO'),
             'semester' => $query->where('kode', 'not like', 'DEMO%'),
             'mata-kuliah' => $query->where('kode', 'not like', 'DEMO%')->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')),
-            'dosen' => $query->where(fn (Builder $scope) => $scope->whereNull('nidn')->orWhere('nidn', 'not like', 'DEMO%'))
-                ->whereDoesntHave('programStudi', fn (Builder $program) => $program->where('kode', 'like', '%-DEMO'))
-                ->whereDoesntHave('user', fn (Builder $user) => $user->where('email', 'like', '%'.self::DEMO_USER_DOMAIN)),
-            'mahasiswa' => $query->where('nim', 'not like', 'DEMO%')->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))
-                ->whereDoesntHave('user', fn (Builder $user) => $user->where('email', 'like', '%'.self::DEMO_USER_DOMAIN)),
+            'dosen' => OperationalAcademicData::scopeLecturer($query),
+            'mahasiswa' => OperationalAcademicData::scopeStudent($query),
             default => null,
         };
 

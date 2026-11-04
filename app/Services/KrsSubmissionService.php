@@ -94,10 +94,6 @@ class KrsSubmissionService
     private function hasRequiredColumns(array $requirements): bool
     {
         foreach ($requirements as $table => $columns) {
-            if (! Schema::hasTable($table)) {
-                return false;
-            }
-
             if (array_diff($columns, Schema::getColumnListing($table)) !== []) {
                 return false;
             }
@@ -144,7 +140,7 @@ class KrsSubmissionService
 
     public function availableClasses(Mahasiswa $mahasiswa, Semester $semester): Builder
     {
-        return KelasKuliah::query()
+        return OperationalAcademicData::classes()
             ->with(['mataKuliah', 'dosen'])
             ->where('semester_id', $semester->id)
             ->whereHas('mataKuliah', fn (Builder $course) => $course
@@ -268,6 +264,7 @@ class KrsSubmissionService
         abort_unless($this->workflowAvailable(), 503, 'Alur pengajuan KRS belum tersedia sampai schema pendukung diterapkan.');
         $mahasiswa = Mahasiswa::query()->with('programStudi')->where('user_id', $user->id)->lockForUpdate()->first();
         abort_unless($mahasiswa, 404, 'Profil mahasiswa tidak ditemukan.');
+        abort_unless(OperationalAcademicData::students()->whereKey($mahasiswa->id)->exists(), 403, 'Profil ini bukan data operasional.');
         abort_if(str_starts_with(strtoupper($mahasiswa->nim), 'DEMO') || str_ends_with(strtoupper($mahasiswa->programStudi?->kode ?? ''), '-DEMO'), 403, 'Akun demo tidak dapat mengubah data operasional.');
 
         return $mahasiswa;
@@ -327,9 +324,12 @@ class KrsSubmissionService
             return;
         }
 
-        $reserved = KrsDetail::query()->where('kelas_kuliah_id', $class->id)
-            ->whereHas('krs', fn (Builder $query) => $query->whereIn('status', ['menunggu', 'disetujui'])->where('id', '<>', $currentKrs->id))
-            ->count();
+        $reserved = KrsDetail::query()->join('krs', 'krs.id', '=', 'krs_detail.krs_id')
+            ->where('krs_detail.kelas_kuliah_id', $class->id)
+            ->whereIn('krs.status', ['menunggu', 'disetujui'])->where('krs.id', '<>', $currentKrs->id)
+            // A locking/current read sees the reservation committed by the previous
+            // class-lock holder, even when REPEATABLE READ established an older snapshot.
+            ->lockForUpdate()->get(['krs_detail.id'])->count();
         if ($reserved >= (int) $class->kapasitas) {
             throw ValidationException::withMessages(['kelas_kuliah_id' => 'Kapasitas kelas telah terpenuhi.']);
         }

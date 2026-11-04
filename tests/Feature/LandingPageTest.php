@@ -11,6 +11,9 @@ class LandingPageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk()
+            ->assertSee('id="transparansi"', false)
+            ->assertSee('data-bs-target="#mainNavigation"', false)
+            ->assertSee('class="collapse navbar-collapse"', false)
             ->assertViewIs('landing.index')
             ->assertSee('Kenali Risiko Lebih Dini.', false)
             ->assertSee('Pahami kondisi akademik mahasiswa melalui analisis data yang transparan', false)

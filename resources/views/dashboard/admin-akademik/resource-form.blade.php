@@ -19,7 +19,7 @@
                     $choices = $options[$field] ?? ($definition['choices'] ?? []);
                 @endphp
                 @if ($definition['type'] === 'checkbox')
-                    <label class="admin-checkbox"><input type="checkbox" name="{{ $field }}" value="1" @checked(session()->hasOldInput($field) ? (bool) old($field) : (bool) ($value ?? true))><span>{{ $definition['label'] }}</span></label>
+                    <label class="admin-checkbox"><input type="checkbox" name="{{ $field }}" value="1" @checked(session()->hasOldInput() ? (bool) old($field, false) : (bool) ($value ?? true))><span>{{ $definition['label'] }}</span></label>
                 @else
                     <label class="admin-field" for="field-{{ $field }}"><span>{{ $definition['label'] }}@if (!($definition['nullable'] ?? false)) <b aria-hidden="true">*</b>@endif</span>
                         @if ($definition['type'] === 'select')
@@ -29,7 +29,7 @@
                             </select>
                             @if (empty($choices))<small>Pilihan operasional belum tersedia. Tambahkan data induk atau akun role yang sesuai terlebih dahulu.</small>@endif
                         @else
-                            <input id="field-{{ $field }}" type="{{ $definition['type'] }}" name="{{ $field }}" value="{{ $value }}" @required(!($definition['nullable'] ?? false)) @if ($definition['type'] === 'number') min="{{ $field === 'angkatan' ? 1900 : 1 }}" max="{{ $field === 'angkatan' ? 2200 : 255 }}" @endif>
+                            <input id="field-{{ $field }}" type="{{ $definition['type'] }}" name="{{ $field }}" value="{{ $value }}" @required(!($definition['nullable'] ?? false)) @if ($definition['type'] === 'number') min="{{ $definition['min'] ?? ($field === 'angkatan' ? 1900 : 1) }}" max="{{ $definition['max'] ?? ($field === 'angkatan' ? 2200 : 255) }}" @endif>
                         @endif
                     </label>
                 @endif

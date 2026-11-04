@@ -1,0 +1,44 @@
+﻿ M .env.docker.example
+ M app/Http/Controllers/AdminAcademicController.php
+ M app/Http/Controllers/AdminKrsReviewController.php
+ M app/Http/Controllers/DosenNilaiController.php
+ M app/Services/AcademicGradeSummary.php
+ M app/Services/GradeFinalizationService.php
+ M app/Services/KrsDecisionService.php
+ M app/Services/KrsSubmissionService.php
+ M app/Services/MahasiswaOperationalData.php
+ M config/dashboard.php
+ M resources/css/landing.css
+ M resources/css/login.css
+ M resources/css/student-dashboard.css
+ M resources/js/landing.js
+ M resources/views/dashboard/admin-akademik/index.blade.php
+ M resources/views/dashboard/admin-akademik/resource-form.blade.php
+ M resources/views/dashboard/admin-akademik/resource-index.blade.php
+ M resources/views/dashboard/dosen/nilai.blade.php
+ M resources/views/landing/index.blade.php
+ M routes/web.php
+ M tests/Feature/DemoAccountAuthenticationTest.php
+ M tests/Feature/LandingPageTest.php
+ M tests/TestCase.php
+?? .playwright-mcp/page-2026-11-04T12-41-07-819Z.yml
+?? .playwright-mcp/page-2026-11-04T14-18-59-042Z.yml
+?? .playwright-mcp/page-2026-11-04T14-38-56-873Z.yml
+?? .playwright-mcp/page-2026-11-04T14-41-46-856Z.yml
+?? .playwright-mcp/qa-20261104-1a1a6a8cc3b/
+?? app/Http/Controllers/AdminKelasKuliahController.php
+?? app/Http/Controllers/DosenDashboardController.php
+?? app/Http/Controllers/OwnerDashboardController.php
+?? app/Services/GradeEntryService.php
+?? app/Services/LecturerAcademicData.php
+?? app/Services/OperationalAcademicData.php
+?? docs/
+?? phpunit.mysql.xml
+?? qa-artifacts/
+?? resources/views/dashboard/admin-akademik/kelas-detail.blade.php
+?? resources/views/dashboard/dosen/index.blade.php
+?? resources/views/dashboard/owner/
+?? tests/Feature/AcademicOperationsTest.php
+?? tests/Mysql/
+?? tests/MysqlTestCase.php
+?? tests/Support/

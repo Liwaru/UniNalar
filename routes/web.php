@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\AdminAcademicController;
+use App\Http\Controllers\AdminKelasKuliahController;
 use App\Http\Controllers\AdminKrsReviewController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DosenDashboardController;
 use App\Http\Controllers\DosenNilaiController;
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\MahasiswaKrsController;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\OwnerDashboardController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -52,13 +55,11 @@ Route::middleware('auth')->group(function () {
         Route::put('/profil/kontak', [MahasiswaDashboardController::class, 'updateProfil'])->name('profil.update');
     });
 
-    Route::get('/dashboard/dosen', fn () => view('dashboard.role', [
-        'role' => User::ROLE_LABELS[User::ROLE_DOSEN],
-        'isDemoAccount' => str_ends_with(strtolower((string) Auth::user()->email), '@demo.uninlar.test'),
-    ]))->middleware('level:2')->name('dashboard.dosen');
+    Route::get('/dashboard/dosen', [DosenDashboardController::class, 'index'])->middleware('level:2')->name('dashboard.dosen');
     Route::middleware('level:2')->prefix('/dashboard/dosen')->name('dashboard.dosen.')->group(function () {
         Route::get('/nilai', [DosenNilaiController::class, 'index'])->name('nilai');
-        Route::post('/nilai/{nilai}/finalisasi', [DosenNilaiController::class, 'finalize'])->middleware('throttle:30,1')->name('nilai.finalize');
+        Route::put('/nilai/detail/{detail}', [DosenNilaiController::class, 'save'])->whereNumber('detail')->middleware('throttle:30,1')->name('nilai.save');
+        Route::post('/nilai/{nilai}/finalisasi', [DosenNilaiController::class, 'finalize'])->whereNumber('nilai')->middleware('throttle:30,1')->name('nilai.finalize');
     });
 
     Route::get('/dashboard/admin-akademik', fn () => view('dashboard.admin-akademik.index', [
@@ -67,9 +68,10 @@ Route::middleware('auth')->group(function () {
     ]))->middleware('level:3')->name('dashboard.admin-akademik');
 
     Route::prefix('/dashboard/admin-akademik')->name('dashboard.admin-akademik.')->middleware('level:3')->group(function () {
+        Route::resource('kelas-kuliah', AdminKelasKuliahController::class)->parameters(['kelas-kuliah' => 'kelas_kuliah'])->whereNumber('kelas_kuliah');
         Route::get('/krs-pengajuan', [AdminKrsReviewController::class, 'index'])->name('krs-pengajuan.index');
         Route::post('/krs-pengajuan/{history}/{decision}', [AdminKrsReviewController::class, 'decide'])
-            ->whereIn('decision', ['disetujui', 'ditolak'])->middleware('throttle:30,1')->name('krs-pengajuan.decision');
+            ->whereNumber('history')->whereIn('decision', ['disetujui', 'ditolak'])->middleware('throttle:30,1')->name('krs-pengajuan.decision');
         foreach (['program-studi', 'semester', 'mata-kuliah', 'dosen', 'mahasiswa'] as $resource) {
             Route::resource($resource, AdminAcademicController::class)
                 ->parameters([$resource => 'record'])
@@ -78,10 +80,7 @@ Route::middleware('auth')->group(function () {
         }
     });
 
-    Route::get('/dashboard/owner', fn () => view('dashboard.role', [
-        'role' => User::ROLE_LABELS[User::ROLE_KAPRODI],
-        'isDemoAccount' => str_ends_with(strtolower((string) Auth::user()->email), '@demo.uninlar.test'),
-    ]))->middleware('level:4')->name('dashboard.owner');
+    Route::get('/dashboard/owner', [OwnerDashboardController::class, 'index'])->middleware('level:4')->name('dashboard.owner');
 
     Route::get('/area/mahasiswa', fn () => response()->json(['area' => 'mahasiswa']))
         ->middleware('level:1,3,4')->name('area.mahasiswa');

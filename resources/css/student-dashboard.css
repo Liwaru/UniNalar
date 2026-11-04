@@ -35,9 +35,9 @@ a { color: inherit; text-decoration: none; }
 .student-brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 25px; border-bottom: 1px solid #edf1f6; }
 .student-brand img { width: 35px; height: 35px; object-fit: contain; }
 .student-brand strong { color: #14213d; font-size: 16px; font-weight: 800; letter-spacing: -.04em; }
-.student-brand span { display: block; margin-top: 2px; color: #94a0b1; font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.student-brand span { display: block; margin-top: 2px; color: #64748b; font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .student-nav { display: grid; gap: 5px; margin-top: 23px; }
-.student-nav-label { margin: 0 11px 7px; color: #9aa5b5; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.student-nav-label { margin: 0 11px 7px; color: #64748b; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
 .student-nav a { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 0 12px; border-radius: 9px; color: #66748a; font-size: 12px; font-weight: 600; transition: color .16s ease, background .16s ease; }
 .student-nav a:hover { color: #2563eb; background: #f4f7fc; }
 .student-nav a[aria-current="page"] { color: #1d54bd; background: #edf4ff; font-weight: 700; }
@@ -46,7 +46,7 @@ a { color: inherit; text-decoration: none; }
 .student-identity { display: flex; align-items: center; gap: 10px; padding: 14px 8px; border-top: 1px solid #edf1f6; }
 .student-avatar { width: 35px; height: 35px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 11px; color: #1d54bd; background: #eaf2ff; font-size: 13px; font-weight: 800; }
 .student-identity strong { display: block; overflow: hidden; color: #25334a; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.student-identity span { display: block; margin-top: 3px; color: #93a0b1; font-size: 9px; }
+.student-identity span { display: block; margin-top: 3px; color: #64748b; font-size: 9px; }
 .student-logout { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 0; border-radius: 8px; color: #748198; background: transparent; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
 .student-logout:hover { color: #b42318; background: #fff5f4; }
 .student-logout svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
@@ -120,6 +120,15 @@ a { color: inherit; text-decoration: none; }
 .student-form .form-error { color: #b42318; font-size: 10px; }
 .student-form .form-success { margin: 0; color: #087a65; font-size: 10px; }
 .student-footer-note { margin: 28px 0 0; color: #99a4b3; font-size: 9px; text-align: center; }
+.academic-table-wrap { max-width: 100%; overflow-x: auto; }
+.academic-card-title { margin: 0 0 14px; color: #14213d; font-size: 15px; font-weight: 800; line-height: 1.5; }
+.grade-entry-form { display: grid; gap: 7px; min-width: 180px; }
+.grade-entry-form input, .grade-entry-form select, .monitoring-filters select { max-width: 100%; min-height: 38px; padding: 8px; border: 1px solid #dce3ed; border-radius: 7px; background: #fff; color: #14213d; font: inherit; }
+.grade-entry-form button, .monitoring-filters button { min-height: 38px; padding: 8px 14px; border: 0; border-radius: 7px; background: #2563eb; color: #fff; font: inherit; cursor: pointer; }
+.monitoring-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin-bottom: 20px; }
+.monitoring-filters label { display: grid; gap: 6px; min-width: 0; }
+.monitoring-counts { display: grid; gap: 12px; padding: 0; list-style: none; }
+.monitoring-counts li { display: flex; justify-content: space-between; gap: 16px; }
 
 @media (max-width: 1180px) {
     .student-layout { grid-template-columns: 220px minmax(0, 1fr); }

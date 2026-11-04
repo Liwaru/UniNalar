@@ -1,0 +1,9 @@
+﻿[
+    "tests\\Feature\\AcademicOperationsTest.php",
+    "resources\\views\\dashboard\\dosen\\nilai.blade.php",
+    "app\\Services\\LecturerAcademicData.php",
+    "app\\Services\\KrsSubmissionService.php",
+    "app\\Services\\GradeFinalizationService.php",
+    "app\\Services\\GradeEntryService.php",
+    "app\\Http\\Controllers\\DosenNilaiController.php"
+]

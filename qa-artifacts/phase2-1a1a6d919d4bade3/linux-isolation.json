@@ -1,0 +1,10 @@
+{
+  "run": "1a1a6d919d4bade3",
+  "db_host": "uninalar-p2-db-919d4bade3",
+  "database": "qa_919d4bade3",
+  "server_uuid": "fa19b2fa-d857-11f1-a07f-b2b812a9b2b5",
+  "operational_uuid": "356268fd-cbd1-11f1-bdbf-aa299b87e940",
+  "network_internal": true,
+  "mysql_tmpfs": true,
+  "php_host": "qa-linux-919d4bade3"
+}

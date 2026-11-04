@@ -1,0 +1,926 @@
+diff --git a/.env.docker.example b/.env.docker.example
+index 00dafe8..fd8a951 100644
+--- a/.env.docker.example
++++ b/.env.docker.example
+@@ -17,7 +17,7 @@ FILESYSTEM_DISK=local
+ DB_CONNECTION=mysql
+ DB_HOST=db
+ DB_PORT=3306
+-DB_DATABASE=uninlar
++DB_DATABASE=uninalar
+ DB_USERNAME=uninlar
+ DB_PASSWORD=
+ MYSQL_DATABASE=uninlar
+diff --git a/app/Http/Controllers/AdminAcademicController.php b/app/Http/Controllers/AdminAcademicController.php
+index f999c6c..2d0be08 100644
+--- a/app/Http/Controllers/AdminAcademicController.php
++++ b/app/Http/Controllers/AdminAcademicController.php
+@@ -8,6 +8,7 @@
+ use App\Models\ProgramStudi;
+ use App\Models\Semester;
+ use App\Models\User;
++use App\Services\OperationalAcademicData;
+ use Illuminate\Database\Eloquent\Builder;
+ use Illuminate\Database\QueryException;
+ use Illuminate\Http\RedirectResponse;
+@@ -199,11 +200,8 @@ private function operationalQuery(array $config): Builder
+             'program-studi' => $query->where('kode', 'not like', '%-DEMO'),
+             'semester' => $query->where('kode', 'not like', 'DEMO%'),
+             'mata-kuliah' => $query->where('kode', 'not like', 'DEMO%')->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')),
+-            'dosen' => $query->where(fn (Builder $scope) => $scope->whereNull('nidn')->orWhere('nidn', 'not like', 'DEMO%'))
+-                ->whereDoesntHave('programStudi', fn (Builder $program) => $program->where('kode', 'like', '%-DEMO'))
+-                ->whereDoesntHave('user', fn (Builder $user) => $user->where('email', 'like', '%'.self::DEMO_USER_DOMAIN)),
+-            'mahasiswa' => $query->where('nim', 'not like', 'DEMO%')->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))
+-                ->whereDoesntHave('user', fn (Builder $user) => $user->where('email', 'like', '%'.self::DEMO_USER_DOMAIN)),
++            'dosen' => OperationalAcademicData::scopeLecturer($query),
++            'mahasiswa' => OperationalAcademicData::scopeStudent($query),
+             default => null,
+         };
+ 
+diff --git a/app/Http/Controllers/AdminKrsReviewController.php b/app/Http/Controllers/AdminKrsReviewController.php
+index 6bec727..5221ddc 100644
+--- a/app/Http/Controllers/AdminKrsReviewController.php
++++ b/app/Http/Controllers/AdminKrsReviewController.php
+@@ -5,6 +5,7 @@
+ use App\Models\KrsPengajuanRiwayat;
+ use App\Services\KrsDecisionService;
+ use App\Services\KrsSubmissionService;
++use App\Services\OperationalAcademicData;
+ use Illuminate\Database\Eloquent\Builder;
+ use Illuminate\Http\Request;
+ use Illuminate\View\View;
+@@ -19,14 +20,7 @@ public function index(): View
+         $available = $this->workflow->workflowAvailable();
+         $submissions = $available
+             ? KrsPengajuanRiwayat::query()->where('status', 'menunggu')
+-                ->whereHas('krs', fn (Builder $krs) => $krs->where('status', 'menunggu')
+-                    ->whereHas('mahasiswa', fn (Builder $student) => $student->where('nim', 'not like', 'DEMO%')
+-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
+-                    ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
+-                    ->whereHas('details.kelasKuliah.mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
+-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
+-                    ->whereDoesntHave('details.kelasKuliah.mataKuliah', fn (Builder $course) => $course->where('kode', 'like', 'DEMO%')
+-                        ->orWhereHas('programStudi', fn (Builder $program) => $program->where('kode', 'like', '%-DEMO'))))
++                ->whereHas('krs', fn (Builder $krs) => OperationalAcademicData::scopeKrs($krs)->where('status', 'menunggu'))
+                 ->with(['diajukanOleh', 'krs.mahasiswa.programStudi', 'krs.semester'])
+                 ->orderBy('diajukan_pada')->orderBy('id')->paginate(20)
+             : null;
+diff --git a/app/Http/Controllers/DosenNilaiController.php b/app/Http/Controllers/DosenNilaiController.php
+index 7d3f111..efec47b 100644
+--- a/app/Http/Controllers/DosenNilaiController.php
++++ b/app/Http/Controllers/DosenNilaiController.php
+@@ -2,47 +2,47 @@
+ 
+ namespace App\Http\Controllers;
+ 
+-use App\Models\Dosen;
+-use App\Models\KelasKuliah;
+-use App\Models\Nilai;
++use App\Services\GradeEntryService;
+ use App\Services\GradeFinalizationService;
+-use Illuminate\Database\Eloquent\Builder;
++use App\Services\LecturerAcademicData;
+ use Illuminate\Http\RedirectResponse;
+ use Illuminate\Http\Request;
+-use Illuminate\Support\Facades\Schema;
+ use Illuminate\View\View;
+ 
+ class DosenNilaiController extends Controller
+ {
+-    public function __construct(private readonly GradeFinalizationService $finalization) {}
++    public function __construct(private readonly GradeFinalizationService $finalization, private readonly LecturerAcademicData $data, private readonly GradeEntryService $entries) {}
+ 
+     public function index(Request $request): View
+     {
+-        $lecturer = Dosen::query()->where('user_id', $request->user()->id)->where('aktif', true)->first();
+-        $available = Schema::hasTable('nilai') && $this->finalization->workflowAvailable();
++        $available = $this->finalization->workflowAvailable();
++        $lecturer = $this->data->profile($request->user());
+         $classes = $lecturer && $available
+-            ? KelasKuliah::query()->where('dosen_id', $lecturer->id)
+-                ->whereHas('mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
+-                    ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
+-                ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
++            ? $this->data->classes($lecturer)
+                 ->with(['mataKuliah', 'semester', 'krsDetails' => fn ($details) => $details
+-                    ->whereHas('krs', fn (Builder $krs) => $krs->where('status', 'disetujui')
+-                        ->whereHas('mahasiswa', fn (Builder $student) => $student->where('nim', 'not like', 'DEMO%')
+-                            ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
++                    ->whereIn('id', $this->data->details($lecturer)->select('krs_detail.id'))
+                     ->with(['krs.mahasiswa', 'nilai'])])
+-                ->orderByDesc('semester_id')->orderBy('mata_kuliah_id')->get()
++                ->orderByDesc('semester_id')->orderBy('mata_kuliah_id')->paginate(10)
+             : collect();
+ 
+         return view('dashboard.dosen.nilai', [
+             'lecturer' => $lecturer,
+             'classes' => $classes,
+             'available' => $available,
++            'gradePoints' => config('academic.grade_points', []),
+         ]);
+     }
+ 
+-    public function finalize(Request $request, Nilai $nilai): RedirectResponse
++    public function save(Request $request, int $detail): RedirectResponse
+     {
+-        $this->finalization->finalize($request->user(), $nilai->id);
++        $this->entries->save($request->user(), $detail, $request->only(['nilai_angka', 'nilai_huruf', 'revision']));
++
++        return back()->with('status', 'Nilai tersimpan. Nilai belum dikunci sampai difinalisasi.');
++    }
++
++    public function finalize(Request $request, int $nilai): RedirectResponse
++    {
++        $this->finalization->finalize($request->user(), $nilai);
+ 
+         return back()->with('status', 'Nilai berhasil difinalisasi.');
+     }
+diff --git a/app/Services/AcademicGradeSummary.php b/app/Services/AcademicGradeSummary.php
+index 81509c1..b40cf0b 100644
+--- a/app/Services/AcademicGradeSummary.php
++++ b/app/Services/AcademicGradeSummary.php
+@@ -13,21 +13,32 @@ class AcademicGradeSummary
+     /** @return array{ips: ?float, ips_semester: ?string, ipk: ?float, final_count: int} */
+     public function forStudent(Mahasiswa $student): array
+     {
+-        if (! Schema::hasTable('nilai') || ! Schema::hasColumn('nilai', 'final_at')) {
+-            return ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
++        return $this->forStudents(collect([$student]))[$student->id];
++    }
++
++    /** One grade query for all selected students, avoiding a query per student. */
++    public function forStudents(Collection $students): Collection
++    {
++        $empty = ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
++        if ($students->isEmpty() || ! Schema::hasTable('nilai') || ! Schema::hasColumn('nilai', 'final_at')) {
++            return $students->mapWithKeys(fn ($student) => [$student->id => $empty]);
+         }
+ 
+         $grades = Nilai::query()->whereNotNull('final_at')
+-            ->whereHas('krsDetail.krs', fn (Builder $krs) => $krs
+-                ->where('mahasiswa_id', $student->id)
+-                ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
+-                ->whereHas('mahasiswa', fn (Builder $profile) => $profile->where('nim', 'not like', 'DEMO%')
+-                    ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
+-            ->whereHas('krsDetail.kelasKuliah.mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
+-                ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
++            ->whereIn('krs_detail_id', OperationalAcademicData::approvedDetails()
++                ->whereHas('krs', fn (Builder $krs) => $krs->whereIn('mahasiswa_id', $students->pluck('id')))
++                ->select('krs_detail.id'))
+             ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
+-            ->orderByDesc('final_at')->orderByDesc('id')->get();
++            ->orderByDesc('final_at')->orderByDesc('id')->get()
++            ->groupBy(fn (Nilai $grade) => $grade->krsDetail->krs->mahasiswa_id);
++
++        return $students->mapWithKeys(fn ($student) => [
++            $student->id => isset($grades[$student->id]) ? $this->summarize($grades[$student->id]) : $empty,
++        ]);
++    }
+ 
++    private function summarize(Collection $grades): array
++    {
+         $valid = $grades->filter(fn (Nilai $grade) => $this->points($grade) !== null
+             && (int) ($grade->krsDetail?->kelasKuliah?->mataKuliah?->sks ?? 0) > 0)->values();
+         $bySemester = $valid->filter(fn (Nilai $grade) => $grade->krsDetail?->krs?->semester !== null)
+@@ -64,6 +75,9 @@ private function weightedAverage(Collection $grades): ?float
+ 
+     private function points(Nilai $grade): ?float
+     {
++        if ($grade->nilai_angka !== null && ((float) $grade->nilai_angka < 0 || (float) $grade->nilai_angka > 100)) {
++            return null;
++        }
+         $letter = strtoupper(trim((string) $grade->nilai_huruf));
+         $configured = config('academic.grade_points', []);
+         if ($letter === '' || ! array_key_exists($letter, $configured)) {
+diff --git a/app/Services/GradeFinalizationService.php b/app/Services/GradeFinalizationService.php
+index 173900c..2c366fa 100644
+--- a/app/Services/GradeFinalizationService.php
++++ b/app/Services/GradeFinalizationService.php
+@@ -2,10 +2,8 @@
+ 
+ namespace App\Services;
+ 
+-use App\Models\Dosen;
+ use App\Models\Nilai;
+ use App\Models\User;
+-use Illuminate\Database\Eloquent\Builder;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Schema;
+ use Illuminate\Validation\ValidationException;
+@@ -14,7 +12,7 @@ class GradeFinalizationService
+ {
+     public function workflowAvailable(): bool
+     {
+-        if (! Schema::hasTable('nilai')) {
++        if (! app(LecturerAcademicData::class)->available()) {
+             return false;
+         }
+ 
+@@ -25,7 +23,8 @@ public function workflowAvailable(): bool
+             return false;
+         }
+ 
+-        $hasFinalizedAtIndex = collect(Schema::getIndexes('nilai'))->contains(
++        $indexes = Schema::getIndexes('nilai');
++        $hasFinalizedAtIndex = collect($indexes)->contains(
+             fn (array $index): bool => $index['columns'] === ['final_at'],
+         );
+         $foreignKeys = Schema::getForeignKeys('nilai');
+@@ -40,24 +39,22 @@ public function workflowAvailable(): bool
+             && strtolower($foreignKey['on_delete']) === 'cascade'
+         );
+ 
+-        return $hasFinalizedAtIndex && $hasRestrictedUserForeignKey && $hasDetailForeignKey;
++        $hasUniqueDetail = collect($indexes)->contains(fn (array $index): bool => $index['unique'] && $index['columns'] === ['krs_detail_id']);
++
++        return $hasFinalizedAtIndex && $hasRestrictedUserForeignKey && $hasDetailForeignKey && $hasUniqueDetail;
+     }
+ 
+     public function finalize(User $user, int $gradeId): Nilai
+     {
+         abort_unless((int) $user->level === User::ROLE_DOSEN, 403);
+         abort_unless($this->workflowAvailable(), 503, 'Finalisasi nilai belum tersedia sampai schema pendukung diterapkan.');
+-        $lecturer = Dosen::query()->where('user_id', $user->id)->where('aktif', true)->firstOrFail();
++        $data = app(LecturerAcademicData::class);
++        $lecturer = $data->profile($user);
++        abort_unless($lecturer, 404);
+ 
+-        return DB::transaction(function () use ($user, $lecturer, $gradeId): Nilai {
++        return DB::transaction(function () use ($user, $lecturer, $gradeId, $data): Nilai {
+             $grade = Nilai::query()->whereKey($gradeId)
+-                ->whereHas('krsDetail.krs', fn (Builder $krs) => $krs->where('status', 'disetujui')
+-                    ->whereHas('mahasiswa', fn (Builder $student) => $student->where('nim', 'not like', 'DEMO%')
+-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
+-                ->whereHas('krsDetail.kelasKuliah', fn (Builder $class) => $class->where('dosen_id', $lecturer->id)
+-                    ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
+-                    ->whereHas('mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
+-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
++                ->whereIn('krs_detail_id', $data->details($lecturer)->select('krs_detail.id'))
+                 ->lockForUpdate()->firstOrFail();
+ 
+             if ($grade->final_at !== null) {
+@@ -65,6 +62,9 @@ public function finalize(User $user, int $gradeId): Nilai
+             }
+ 
+             $letter = strtoupper(trim((string) $grade->nilai_huruf));
++            if ($grade->nilai_angka !== null && ((float) $grade->nilai_angka < 0 || (float) $grade->nilai_angka > 100)) {
++                throw ValidationException::withMessages(['nilai' => 'Nilai angka berada di luar rentang 0–100.']);
++            }
+             $gradePoints = config('academic.grade_points', []);
+             if ($letter === '' || ! array_key_exists($letter, $gradePoints)) {
+                 throw ValidationException::withMessages(['nilai' => 'Nilai huruf belum tercatat atau tidak terdapat pada skala nilai yang dikonfigurasi.']);
+diff --git a/app/Services/KrsDecisionService.php b/app/Services/KrsDecisionService.php
+index 4f9da75..9b6fa03 100644
+--- a/app/Services/KrsDecisionService.php
++++ b/app/Services/KrsDecisionService.php
+@@ -21,16 +21,7 @@ public function decide(int $historyId, User $actor, string $decision, ?string $n
+             $history = KrsPengajuanRiwayat::query()->whereKey($historyId)->lockForUpdate()->firstOrFail();
+             $latest = KrsPengajuanRiwayat::query()->where('krs_id', $krs->id)->orderByDesc('versi')->lockForUpdate()->first();
+ 
+-            $krs->load(['mahasiswa.programStudi', 'semester', 'details.kelasKuliah.mataKuliah.programStudi']);
+-            abort_if(
+-                str_starts_with(strtoupper($krs->mahasiswa->nim), 'DEMO')
+-                || str_ends_with(strtoupper($krs->mahasiswa->programStudi?->kode ?? ''), '-DEMO')
+-                || str_starts_with(strtoupper($krs->semester->kode), 'DEMO')
+-                || $krs->details->contains(fn ($detail) => str_starts_with(strtoupper($detail->kelasKuliah?->mataKuliah?->kode ?? ''), 'DEMO')
+-                    || str_ends_with(strtoupper($detail->kelasKuliah?->mataKuliah?->programStudi?->kode ?? ''), '-DEMO')),
+-                404,
+-            );
+-
++            abort_unless(OperationalAcademicData::krs()->whereKey($krs->id)->exists(), 404);
+             if ($krs->status !== 'menunggu' || $history->status !== 'menunggu' || $latest?->id !== $history->id) {
+                 throw ValidationException::withMessages(['krs' => 'Pengajuan ini sudah diputuskan atau bukan versi yang sedang menunggu.']);
+             }
+diff --git a/app/Services/KrsSubmissionService.php b/app/Services/KrsSubmissionService.php
+index d93b361..4fd7bfb 100644
+--- a/app/Services/KrsSubmissionService.php
++++ b/app/Services/KrsSubmissionService.php
+@@ -94,10 +94,6 @@ public function workflowAvailable(): bool
+     private function hasRequiredColumns(array $requirements): bool
+     {
+         foreach ($requirements as $table => $columns) {
+-            if (! Schema::hasTable($table)) {
+-                return false;
+-            }
+-
+             if (array_diff($columns, Schema::getColumnListing($table)) !== []) {
+                 return false;
+             }
+@@ -144,7 +140,7 @@ public function registrationIsOpen(Semester $semester): bool
+ 
+     public function availableClasses(Mahasiswa $mahasiswa, Semester $semester): Builder
+     {
+-        return KelasKuliah::query()
++        return OperationalAcademicData::classes()
+             ->with(['mataKuliah', 'dosen'])
+             ->where('semester_id', $semester->id)
+             ->whereHas('mataKuliah', fn (Builder $course) => $course
+@@ -268,6 +264,7 @@ private function lockStudentProfile(User $user): Mahasiswa
+         abort_unless($this->workflowAvailable(), 503, 'Alur pengajuan KRS belum tersedia sampai schema pendukung diterapkan.');
+         $mahasiswa = Mahasiswa::query()->with('programStudi')->where('user_id', $user->id)->lockForUpdate()->first();
+         abort_unless($mahasiswa, 404, 'Profil mahasiswa tidak ditemukan.');
++        abort_unless(OperationalAcademicData::students()->whereKey($mahasiswa->id)->exists(), 403, 'Profil ini bukan data operasional.');
+         abort_if(str_starts_with(strtoupper($mahasiswa->nim), 'DEMO') || str_ends_with(strtoupper($mahasiswa->programStudi?->kode ?? ''), '-DEMO'), 403, 'Akun demo tidak dapat mengubah data operasional.');
+ 
+         return $mahasiswa;
+@@ -327,9 +324,12 @@ private function assertCapacity(KelasKuliah $class, Krs $currentKrs): void
+             return;
+         }
+ 
+-        $reserved = KrsDetail::query()->where('kelas_kuliah_id', $class->id)
+-            ->whereHas('krs', fn (Builder $query) => $query->whereIn('status', ['menunggu', 'disetujui'])->where('id', '<>', $currentKrs->id))
+-            ->count();
++        $reserved = KrsDetail::query()->join('krs', 'krs.id', '=', 'krs_detail.krs_id')
++            ->where('krs_detail.kelas_kuliah_id', $class->id)
++            ->whereIn('krs.status', ['menunggu', 'disetujui'])->where('krs.id', '<>', $currentKrs->id)
++            // A locking/current read sees the reservation committed by the previous
++            // class-lock holder, even when REPEATABLE READ established an older snapshot.
++            ->lockForUpdate()->get(['krs_detail.id'])->count();
+         if ($reserved >= (int) $class->kapasitas) {
+             throw ValidationException::withMessages(['kelas_kuliah_id' => 'Kapasitas kelas telah terpenuhi.']);
+         }
+diff --git a/app/Services/MahasiswaOperationalData.php b/app/Services/MahasiswaOperationalData.php
+index b99aa69..752b29a 100644
+--- a/app/Services/MahasiswaOperationalData.php
++++ b/app/Services/MahasiswaOperationalData.php
+@@ -5,6 +5,7 @@
+ use App\Models\AnalisisRisiko;
+ use App\Models\Krs;
+ use App\Models\Mahasiswa;
++use App\Models\Semester;
+ use App\Models\User;
+ use Illuminate\Database\Eloquent\Builder;
+ use Illuminate\Support\Facades\Schema;
+@@ -25,6 +26,8 @@ public function context(User $user): array
+         $isDemoProfile = $profile !== null && (
+             str_starts_with(strtoupper($profile->nim), 'DEMO')
+             || str_ends_with(strtoupper($profile->programStudi?->kode ?? ''), '-DEMO')
++            || str_ends_with(strtolower((string) $user->email), '@demo.uninlar.test')
++            || str_ends_with(strtolower((string) $profile->email), '@demo.uninlar.test')
+         );
+ 
+         if ($isDemoProfile) {
+@@ -50,7 +53,7 @@ public function hasTables(array $tables): bool
+     public function activeSemester()
+     {
+         return Schema::hasTable('semester')
+-            ? \App\Models\Semester::query()
++            ? Semester::query()
+                 ->where('aktif', true)
+                 ->where('kode', 'not like', 'DEMO%')
+                 ->orderByDesc('tanggal_mulai')
+@@ -66,16 +69,7 @@ public function krsQuery(int $mahasiswaId): Builder
+ 
+     public function scopeKrs(Builder $query, int $mahasiswaId): Builder
+     {
+-        return $query
+-            ->where('mahasiswa_id', $mahasiswaId)
+-            ->whereHas('semester', fn ($semester) => $semester->where('kode', 'not like', 'DEMO%'))
+-            ->whereDoesntHave('details.kelasKuliah.mataKuliah', function ($course): void {
+-                $course->where('kode', 'like', 'DEMO%');
+-
+-                if (Schema::hasTable('program_studi')) {
+-                    $course->orWhereHas('programStudi', fn ($program) => $program->where('kode', 'like', '%-DEMO'));
+-                }
+-            });
++        return OperationalAcademicData::scopeKrs($query)->where('mahasiswa_id', $mahasiswaId);
+     }
+ 
+     public function analysisQuery(int $mahasiswaId): Builder
+@@ -85,20 +79,6 @@ public function analysisQuery(int $mahasiswaId): Builder
+ 
+     public function scopeAnalysis(Builder $query, int $mahasiswaId): Builder
+     {
+-        $query->where('mahasiswa_id', $mahasiswaId);
+-
+-        if (Schema::hasTable('semester')) {
+-            $query->where(function (Builder $scope): void {
+-                $scope->whereNull('semester_id')
+-                    ->orWhereHas('semester', fn ($semester) => $semester->where('kode', 'not like', 'DEMO%'));
+-            });
+-        } else {
+-            $query->whereNull('semester_id');
+-        }
+-
+-        return $query->where(function (Builder $scope): void {
+-                $scope->whereNull('versi_model')
+-                    ->orWhere('versi_model', 'not like', 'demo%');
+-            });
++        return OperationalAcademicData::scopeAnalysis($query)->where('mahasiswa_id', $mahasiswaId);
+     }
+ }
+diff --git a/config/dashboard.php b/config/dashboard.php
+index 8d891c5..8cb5a68 100644
+--- a/config/dashboard.php
++++ b/config/dashboard.php
+@@ -1,8 +1,10 @@
+ <?php
+ 
++use App\Models\User;
++
+ return [
+     'navigation' => [
+-        \App\Models\User::ROLE_MAHASISWA => [
++        User::ROLE_MAHASISWA => [
+             ['label' => 'KRS & Mata Kuliah', 'route' => 'dashboard.mahasiswa.krs', 'active' => 'dashboard.mahasiswa.krs', 'icon' => 'book'],
+             ['label' => 'Nilai Akademik', 'route' => 'dashboard.mahasiswa.nilai', 'active' => 'dashboard.mahasiswa.nilai', 'icon' => 'chart'],
+             ['label' => 'Kehadiran', 'route' => 'dashboard.mahasiswa.kehadiran', 'active' => 'dashboard.mahasiswa.kehadiran', 'icon' => 'calendar'],
+@@ -11,19 +13,19 @@
+             ['label' => 'Tindak Lanjut', 'route' => 'dashboard.mahasiswa.tindak-lanjut', 'active' => 'dashboard.mahasiswa.tindak-lanjut', 'icon' => 'message'],
+             ['label' => 'Profil Saya', 'route' => 'dashboard.mahasiswa.profil', 'active' => 'dashboard.mahasiswa.profil', 'icon' => 'user'],
+         ],
+-        \App\Models\User::ROLE_DOSEN => [
+-            ['label' => 'Dashboard', 'route' => 'dashboard.dosen', 'active' => 'dashboard.dosen', 'icon' => 'dashboard'],
++        User::ROLE_DOSEN => [
++            ['label' => 'Pengelolaan Nilai', 'route' => 'dashboard.dosen.nilai', 'active' => 'dashboard.dosen.nilai*', 'icon' => 'chart'],
+         ],
+-        \App\Models\User::ROLE_ADMIN_AKADEMIK => [
+-            ['label' => 'Dashboard', 'route' => 'dashboard.admin-akademik', 'active' => 'dashboard.admin-akademik', 'icon' => 'dashboard'],
++        User::ROLE_ADMIN_AKADEMIK => [
+             ['label' => 'Program Studi', 'route' => 'dashboard.admin-akademik.program-studi.index', 'active' => 'dashboard.admin-akademik.program-studi.*', 'icon' => 'building'],
+             ['label' => 'Semester', 'route' => 'dashboard.admin-akademik.semester.index', 'active' => 'dashboard.admin-akademik.semester.*', 'icon' => 'calendar'],
+             ['label' => 'Mata Kuliah', 'route' => 'dashboard.admin-akademik.mata-kuliah.index', 'active' => 'dashboard.admin-akademik.mata-kuliah.*', 'icon' => 'book'],
++            ['label' => 'Kelas Kuliah', 'route' => 'dashboard.admin-akademik.kelas-kuliah.index', 'active' => 'dashboard.admin-akademik.kelas-kuliah.*', 'icon' => 'book'],
++            ['label' => 'Pengajuan KRS', 'route' => 'dashboard.admin-akademik.krs-pengajuan.index', 'active' => 'dashboard.admin-akademik.krs-pengajuan.*', 'icon' => 'calendar'],
+             ['label' => 'Dosen', 'route' => 'dashboard.admin-akademik.dosen.index', 'active' => 'dashboard.admin-akademik.dosen.*', 'icon' => 'teacher'],
+             ['label' => 'Mahasiswa', 'route' => 'dashboard.admin-akademik.mahasiswa.index', 'active' => 'dashboard.admin-akademik.mahasiswa.*', 'icon' => 'student'],
+         ],
+-        \App\Models\User::ROLE_KAPRODI => [
+-            ['label' => 'Dashboard', 'route' => 'dashboard.owner', 'active' => 'dashboard.owner', 'icon' => 'dashboard'],
++        User::ROLE_KAPRODI => [
+         ],
+     ],
+ ];
+diff --git a/resources/css/landing.css b/resources/css/landing.css
+index a77eb54..4456274 100644
+--- a/resources/css/landing.css
++++ b/resources/css/landing.css
+@@ -20,6 +20,12 @@ @utility landing-container {
+     max-width: 1180px;
+ }
+ 
++/* Bootstrap controls collapse display; Tailwind's same-name visibility utility
++   must not hide an expanded Bootstrap navigation menu. */
++@layer tailwind-utilities {
++    .site-header #mainNavigation { visibility: visible; }
++}
++
+ @layer landing {
+     :root {
+         --un-navy: #14213d;
+@@ -43,7 +49,7 @@ @layer landing {
+     }
+ 
+     html { scroll-behavior: smooth; }
+-    #beranda, #fitur, #cara-kerja, #tentang { scroll-margin-top: 90px; }
++    #beranda, #fitur, #cara-kerja, #tentang, #transparansi, #dashboard, #cta { scroll-margin-top: 90px; }
+ 
+     .landing-page *, .landing-page *::before, .landing-page *::after { box-sizing: border-box; }
+     .landing-page a { text-decoration: none; }
+@@ -53,7 +59,7 @@ @layer landing {
+ 
+     .site-header { position: sticky; z-index: 10; top: 0; background: rgba(255, 255, 255, .91); border-bottom: 1px solid rgba(230, 235, 242, .8); backdrop-filter: blur(18px); }
+     .site-header .navbar { min-height: 78px; padding: 10px 0; }
+-    .brand-lockup { display: inline-flex; align-items: center; padding: 0; }
++    .brand-lockup { display: inline-flex; flex-shrink: 0; align-items: center; padding: 0; }
+     .brand-lockup img { width: 174px; height: auto; }
+     .site-header .nav-link { position: relative; padding: 12px 14px !important; color: #58657a; font-size: 13px; font-weight: 600; transition: color .18s ease; }
+     .site-header .nav-link::after { position: absolute; right: 14px; bottom: 5px; left: 14px; height: 2px; transform: scaleX(0); transform-origin: left center; border-radius: 2px; background: var(--un-blue); content: ''; transition: transform .18s ease; }
+@@ -279,6 +285,8 @@ @layer landing {
+     .footer-bottom { justify-content: flex-start; gap: 0; padding-top: 17px; border-top: 1px solid #edf0f4; color: #a0a9b6; font-size: 8px; }
+ 
+     @media (max-width: 991.98px) {
++        .landing-container > .row.g-5 { --bs-gutter-x: 1.5rem; }
++        .site-header .navbar-collapse .landing-btn-nav { margin: 2px 0 10px; }
+         .site-header .navbar-collapse { padding: 12px 0 8px; }
+         .site-header .navbar-nav { align-items: stretch !important; margin-left: 0 !important; padding-bottom: 10px; }
+         .site-header .nav-link { padding-left: 0 !important; }
+diff --git a/resources/css/login.css b/resources/css/login.css
+index efa82e7..93078b3 100644
+--- a/resources/css/login.css
++++ b/resources/css/login.css
+@@ -18,7 +18,7 @@ :root {
+ }
+ 
+ body.login-page {
+-    min-width: 960px;
++    min-width: 0;
+     min-height: 100vh;
+     display: grid;
+     place-items: center;
+@@ -32,7 +32,7 @@ .login-shell {
+     width: min(1240px, 100%);
+     min-height: min(700px, calc(100vh - 32px));
+     display: grid;
+-    grid-template-columns: 1.04fr .96fr;
++    grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+     overflow: hidden;
+     border: 1px solid rgba(20, 33, 61, .06);
+     border-radius: 22px;
+@@ -253,6 +253,7 @@ .login-form-panel {
+ }
+ 
+ .login-form-wrap {
++    min-width: 0;
+     width: min(100%, 390px);
+ }
+ 
+@@ -461,3 +462,24 @@ .help-dialog h2 { margin: 17px 0 8px; font-size: 20px; letter-spacing: -.03em; }
+ .help-dialog p { margin: 0; color: #6f7d91; font-size: 12px; line-height: 1.8; }
+ .dialog-confirm { min-width: 104px; height: 39px; margin-top: 22px; padding: 0 16px; border: 0; border-radius: 8px; color: #fff; background: var(--login-blue); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+ 
++@media (max-width: 991.98px) {
++    .login-brand-panel, .login-form-panel { padding: 28px; min-width: 0; }
++    .brand-copy h1 { font-size: 32px; }
++    .academic-visual { margin-left: 0; }
++    .orbit-outer { width: min(355px, 100%); }
++}
++
++@media (max-width: 767.98px) {
++    body.login-page { padding: 16px; }
++    .login-shell { min-height: 0; grid-template-columns: minmax(0, 1fr); }
++    .login-brand-panel, .login-form-panel { padding: 24px; }
++    .login-brand img { width: 160px; max-width: 100%; }
++    .brand-copy { margin-top: 18px; }
++    .brand-copy h1 { font-size: 27px; }
++    .brand-copy > p { font-size: 12px; }
++    .academic-visual, .brand-footnote { display: none; }
++    .login-form-wrap h2 { font-size: 27px; }
++    .form-field input { font-size: 16px; }
++    .form-options { flex-wrap: wrap; gap: 12px; }
++}
++
+diff --git a/resources/css/student-dashboard.css b/resources/css/student-dashboard.css
+index 16d98bd..3f69961 100644
+--- a/resources/css/student-dashboard.css
++++ b/resources/css/student-dashboard.css
+@@ -120,6 +120,15 @@ .student-form .btn:hover { background: #1d4ed8; }
+ .student-form .form-error { color: #b42318; font-size: 10px; }
+ .student-form .form-success { margin: 0; color: #087a65; font-size: 10px; }
+ .student-footer-note { margin: 28px 0 0; color: #99a4b3; font-size: 9px; text-align: center; }
++.academic-table-wrap { max-width: 100%; overflow-x: auto; }
++.academic-card-title { margin: 0 0 14px; color: #14213d; font-size: 15px; font-weight: 800; line-height: 1.5; }
++.grade-entry-form { display: grid; gap: 7px; min-width: 180px; }
++.grade-entry-form input, .grade-entry-form select, .monitoring-filters select { max-width: 100%; min-height: 38px; padding: 8px; border: 1px solid #dce3ed; border-radius: 7px; background: #fff; color: #14213d; font: inherit; }
++.grade-entry-form button, .monitoring-filters button { min-height: 38px; padding: 8px 14px; border: 0; border-radius: 7px; background: #2563eb; color: #fff; font: inherit; cursor: pointer; }
++.monitoring-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin-bottom: 20px; }
++.monitoring-filters label { display: grid; gap: 6px; min-width: 0; }
++.monitoring-counts { display: grid; gap: 12px; padding: 0; list-style: none; }
++.monitoring-counts li { display: flex; justify-content: space-between; gap: 16px; }
+ 
+ @media (max-width: 1180px) {
+     .student-layout { grid-template-columns: 220px minmax(0, 1fr); }
+diff --git a/resources/js/landing.js b/resources/js/landing.js
+index 28961f8..cc6fa7a 100644
+--- a/resources/js/landing.js
++++ b/resources/js/landing.js
+@@ -1,4 +1,4 @@
+-import 'bootstrap';
++import { Collapse } from 'bootstrap';
+ import Chart from 'chart.js/auto';
+ 
+ const currentUrl = new URL(window.location.href);
+@@ -125,6 +125,29 @@ if (sectionNavigation) {
+         .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+         .filter(Boolean);
+     const siteHeader = document.querySelector('.site-header');
++    const mobileMenu = document.getElementById('mainNavigation');
++    let pendingNavigation = null;
++
++    mobileMenu?.addEventListener('shown.bs.collapse', () => {
++        if (pendingNavigation) Collapse.getOrCreateInstance(mobileMenu).hide();
++    });
++    mobileMenu?.addEventListener('hidden.bs.collapse', () => {
++        if (!pendingNavigation) return;
++        const { target, hash } = pendingNavigation;
++        pendingNavigation = null;
++        window.history.pushState(null, '', hash);
++        target.scrollIntoView({ behavior: 'smooth' });
++    });
++
++    sectionLinks.forEach((link) => link.addEventListener('click', (event) => {
++        if (!window.matchMedia('(max-width: 991.98px)').matches || !mobileMenu
++            || !(mobileMenu.classList.contains('show') || mobileMenu.classList.contains('collapsing'))) return;
++        const target = document.getElementById(link.hash.slice(1));
++        if (!target) return;
++        event.preventDefault();
++        pendingNavigation = { target, hash: link.hash };
++        if (mobileMenu.classList.contains('show')) Collapse.getOrCreateInstance(mobileMenu).hide();
++    }));
+ 
+     const setActiveSection = (sectionId) => {
+         sectionLinks.forEach((link) => {
+@@ -141,7 +164,8 @@ if (sectionNavigation) {
+     };
+ 
+     const updateActiveSection = () => {
+-        const activationLine = (siteHeader?.getBoundingClientRect().bottom ?? 0) + 12;
++        const anchorOffset = sectionHeadings[0] ? parseFloat(getComputedStyle(sectionHeadings[0]).scrollMarginTop) || 0 : 0;
++        const activationLine = Math.max((siteHeader?.getBoundingClientRect().bottom ?? 0) + 12, anchorOffset + 1);
+         const activeHeading = sectionHeadings
+             .filter((heading) => heading.getBoundingClientRect().top <= activationLine)
+             .at(-1);
+diff --git a/resources/views/dashboard/admin-akademik/index.blade.php b/resources/views/dashboard/admin-akademik/index.blade.php
+index 1900caf..2cd9566 100644
+--- a/resources/views/dashboard/admin-akademik/index.blade.php
++++ b/resources/views/dashboard/admin-akademik/index.blade.php
+@@ -8,6 +8,7 @@
+             ['Program Studi', 'Kelola program studi, jenjang, dan status operasional.', 'dashboard.admin-akademik.program-studi.index'],
+             ['Semester', 'Kelola periode dan rentang tanggal semester.', 'dashboard.admin-akademik.semester.index'],
+             ['Mata Kuliah', 'Kelola katalog mata kuliah dan keterkaitannya dengan program studi.', 'dashboard.admin-akademik.mata-kuliah.index'],
++            ['Kelas Kuliah', 'Kelola kelas per semester, dosen pengampu, dan kapasitas KRS.', 'dashboard.admin-akademik.kelas-kuliah.index'],
+             ['Data Dosen', 'Kelola profil dosen dan tautan ke akun dosen yang sudah ada.', 'dashboard.admin-akademik.dosen.index'],
+             ['Data Mahasiswa', 'Kelola profil mahasiswa dan tautan ke akun mahasiswa yang sudah ada.', 'dashboard.admin-akademik.mahasiswa.index'],
+             ['Pengajuan KRS', 'Tinjau snapshot pengajuan dan simpan keputusan Admin Akademik.', 'dashboard.admin-akademik.krs-pengajuan.index'],
+diff --git a/resources/views/dashboard/admin-akademik/resource-form.blade.php b/resources/views/dashboard/admin-akademik/resource-form.blade.php
+index d411acc..8cfba1c 100644
+--- a/resources/views/dashboard/admin-akademik/resource-form.blade.php
++++ b/resources/views/dashboard/admin-akademik/resource-form.blade.php
+@@ -29,7 +29,7 @@
+                             </select>
+                             @if (empty($choices))<small>Pilihan operasional belum tersedia. Tambahkan data induk atau akun role yang sesuai terlebih dahulu.</small>@endif
+                         @else
+-                            <input id="field-{{ $field }}" type="{{ $definition['type'] }}" name="{{ $field }}" value="{{ $value }}" @required(!($definition['nullable'] ?? false)) @if ($definition['type'] === 'number') min="{{ $field === 'angkatan' ? 1900 : 1 }}" max="{{ $field === 'angkatan' ? 2200 : 255 }}" @endif>
++                            <input id="field-{{ $field }}" type="{{ $definition['type'] }}" name="{{ $field }}" value="{{ $value }}" @required(!($definition['nullable'] ?? false)) @if ($definition['type'] === 'number') min="{{ $definition['min'] ?? ($field === 'angkatan' ? 1900 : 1) }}" max="{{ $definition['max'] ?? ($field === 'angkatan' ? 2200 : 255) }}" @endif>
+                         @endif
+                     </label>
+                 @endif
+diff --git a/resources/views/dashboard/admin-akademik/resource-index.blade.php b/resources/views/dashboard/admin-akademik/resource-index.blade.php
+index c472f19..aa60416 100644
+--- a/resources/views/dashboard/admin-akademik/resource-index.blade.php
++++ b/resources/views/dashboard/admin-akademik/resource-index.blade.php
+@@ -18,6 +18,7 @@
+             @if ($search !== '')<a class="admin-clear" href="{{ route($config['route'].'.index') }}">Hapus pencarian</a>@endif
+         </form>
+ 
++        @if ($errors->any())<div class="admin-alert error" role="alert">@foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
+         <div class="admin-table-wrap">
+             <table class="admin-table">
+                 <thead><tr>@foreach ($config['columns'] as $label)<th scope="col">{{ $label }}</th>@endforeach<th scope="col">Aksi</th></tr></thead>
+@@ -29,6 +30,7 @@
+                                 <td>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
+                             @endforeach
+                             <td><div class="admin-row-actions">
++                                @if ($config['show'] ?? false)<a href="{{ route($config['route'].'.show', $record) }}">Detail</a>@endif
+                                 <a href="{{ route($config['route'].'.edit', $record) }}">Ubah</a>
+                                 <form method="POST" action="{{ route($config['route'].'.destroy', $record) }}" onsubmit="return confirm('Hapus data ini?')">
+                                     @csrf @method('DELETE')
+diff --git a/resources/views/dashboard/dosen/nilai.blade.php b/resources/views/dashboard/dosen/nilai.blade.php
+index 0924893..fd735ef 100644
+--- a/resources/views/dashboard/dosen/nilai.blade.php
++++ b/resources/views/dashboard/dosen/nilai.blade.php
+@@ -1,32 +1,66 @@
+ @extends('layouts.role-dashboard')
+-@section('title', 'Finalisasi Nilai')
+-@section('page-title', 'Finalisasi Nilai')
+-@section('page-subtitle', 'Nilai yang dapat ditinjau dibatasi pada kelas yang ditugaskan kepada akun dosen ini.')
++@section('title', 'Pengelolaan Nilai')
++@section('page-title', 'Pengelolaan Nilai')
++@section('page-subtitle', 'Input dan finalisasi nilai untuk kelas yang diampu.')
+ @section('content')
+     @if (session('status'))<div class="student-card mb-3" role="status">{{ session('status') }}</div>@endif
+-    @if ($errors->any())<div class="student-card mb-3" role="alert">@foreach ($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
+-    @if (! $lecturer)
+-        <div class="empty-state" role="status"><strong>Profil dosen belum tertaut</strong><span>Hubungi Admin Akademik untuk menghubungkan akun ke profil dosen yang benar.</span></div>
+-    @elseif (! $available)
+-        <div class="empty-state" role="status"><strong>Finalisasi belum tersedia</strong><span>Schema finalisasi nilai belum diterapkan. Nilai operasional tidak diubah.</span></div>
++    @if ($errors->any())<div class="student-card mb-3" role="alert">@foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
++    @if (! $available)
++        <div class="empty-state" role="status"><strong>Pengelolaan nilai belum tersedia</strong><span>Schema pendukung perlu diterapkan terlebih dahulu.</span></div>
++    @elseif (! $lecturer)
++        <div class="empty-state" role="status"><strong>Profil dosen belum tertaut</strong><span>Hubungi Admin Akademik untuk menghubungkan profil dosen operasional.</span></div>
+     @elseif ($classes->isEmpty())
+-        <div class="empty-state" role="status"><strong>Kelas operasional belum tersedia</strong><span>Belum ada kelas non-demo yang ditugaskan kepada profil dosen ini.</span></div>
++        <div class="empty-state" role="status"><strong>Kelas operasional belum tersedia</strong><span>Belum ada kelas yang ditugaskan kepada profil dosen ini.</span></div>
+     @else
++        <p class="student-card">Pilih nilai huruf sesuai hasil penilaian resmi. Nilai mutu dihitung dari skala huruf yang tersedia. Ambang konversi angka ke huruf belum ditetapkan; sistem tidak menebaknya.</p>
+         @foreach ($classes as $class)
+-            <section class="student-section"><div class="student-section-heading"><div><h2>{{ $class->mataKuliah->kode }} · {{ $class->mataKuliah->nama }}</h2><p>{{ $class->semester->kode }} · Kelas {{ $class->kode_kelas }}</p></div></div><article class="student-card">
+-                @php($graded = $class->krsDetails->filter(fn ($detail) => $detail->nilai !== null)->values())
+-                @if ($graded->isEmpty())<div class="empty-state"><strong>Belum ada nilai tercatat</strong><span>Halaman ini tidak membuat nilai; hanya catatan nilai yang sudah ada yang dapat difinalisasi.</span></div>
+-                @else
+-                    <table class="data-table"><thead><tr><th>Mahasiswa</th><th>Nilai angka</th><th>Huruf</th><th>Mutu</th><th>Status finalisasi</th><th>Aksi</th></tr></thead><tbody>
+-                        @foreach ($graded as $detail)
+-                            @php($grade = $detail->nilai)
+-                            <tr><td>{{ $detail->krs->mahasiswa->nama }} · {{ $detail->krs->mahasiswa->nim }}</td><td>{{ $grade->nilai_angka ?? 'Belum tersedia' }}</td><td>{{ $grade->nilai_huruf ?? 'Belum tersedia' }}</td><td>{{ $grade->nilai_mutu ?? 'Belum tersedia' }}</td><td>{{ $grade->final_at ? 'Final · '.$grade->final_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') : 'Belum final' }}</td><td>
+-                                @if (! $grade->final_at)<form method="POST" action="{{ route('dashboard.dosen.nilai.finalize', $grade) }}">@csrf<button type="submit">Finalisasi</button></form>@else Tidak dapat diubah @endif
+-                            </td></tr>
+-                        @endforeach
+-                    </tbody></table>
+-                @endif
+-            </article></section>
++            <section class="student-section">
++                <div class="student-section-heading"><div><h2>{{ $class->mataKuliah->kode }} · {{ $class->mataKuliah->nama }}</h2><p>{{ $class->semester->kode }} · Kelas {{ $class->kode_kelas }}</p></div></div>
++                <article class="student-card">
++                    @if ($class->krsDetails->isEmpty())
++                        <div class="empty-state"><strong>Peserta belum tersedia</strong><span>Peserta tampil setelah KRS disetujui.</span></div>
++                    @else
++                        <div class="academic-table-wrap"><table class="data-table"><thead><tr><th>Mahasiswa</th><th>Penilaian</th><th>Nilai mutu</th><th>Status dan finalisasi</th></tr></thead><tbody>
++                            @foreach ($class->krsDetails as $detail)
++                                @php($grade = $detail->nilai)
++                                <tr>
++                                    <td>{{ $detail->krs->mahasiswa->nama }}<br>{{ $detail->krs->mahasiswa->nim }}</td>
++                                    <td>
++                                        @if ($grade?->final_at)
++                                            {{ $grade->nilai_angka ?? 'Belum tersedia' }} · {{ $grade->nilai_huruf }}
++                                        @else
++                                            <form class="grade-entry-form" method="POST" action="{{ route('dashboard.dosen.nilai.save', $detail->id) }}">
++                                                @csrf @method('PUT')
++                                                <input type="hidden" name="revision" value="{{ \App\Services\GradeEntryService::revision($grade) }}">
++                                                <label for="angka-{{ $detail->id }}">Nilai angka (0–100)</label>
++                                                <input id="angka-{{ $detail->id }}" type="number" name="nilai_angka" min="0" max="100" step="0.01" required value="{{ $grade?->nilai_angka }}">
++                                                <label for="huruf-{{ $detail->id }}">Nilai huruf</label>
++                                                <select id="huruf-{{ $detail->id }}" name="nilai_huruf" required>
++                                                    <option value="">Pilih huruf</option>
++                                                    @foreach ($gradePoints as $letter => $points)<option value="{{ $letter }}" @selected($grade?->nilai_huruf === $letter)>{{ $letter }} ({{ number_format($points, 2) }})</option>@endforeach
++                                                </select>
++                                                <button type="submit">Simpan nilai</button>
++                                            </form>
++                                        @endif
++                                    </td>
++                                    <td>{{ $grade?->nilai_mutu ?? 'Belum tersedia' }}</td>
++                                    <td>
++                                        @if ($grade?->final_at)
++                                            Final · {{ $grade->final_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}<br>Nilai terkunci
++                                        @elseif ($grade)
++                                            Belum final
++                                            <form method="POST" action="{{ route('dashboard.dosen.nilai.finalize', $grade->id) }}">@csrf<button type="submit">Finalisasi nilai</button></form>
++                                        @else
++                                            Belum ada nilai
++                                        @endif
++                                    </td>
++                                </tr>
++                            @endforeach
++                        </tbody></table></div>
++                    @endif
++                </article>
++            </section>
+         @endforeach
++        {{ $classes->links() }}
+     @endif
+ @endsection
+diff --git a/resources/views/landing/index.blade.php b/resources/views/landing/index.blade.php
+index 16d79b3..bf04e91 100644
+--- a/resources/views/landing/index.blade.php
++++ b/resources/views/landing/index.blade.php
+@@ -4,12 +4,13 @@
+ 
+ @section('content')
+ <header class="site-header">
+-    <nav class="navbar navbar-expand" aria-label="Navigasi utama">
++    <nav class="navbar navbar-expand-lg" aria-label="Navigasi utama">
+         <div class="container landing-container">
+             <a class="navbar-brand brand-lockup" href="#beranda" aria-label="UniNalar, Beranda">
+                 <img src="{{ asset('images/UniNalar Sidebar.png') }}" alt="UniNalar" width="174" height="58">
+             </a>
+-            <div class="navbar-collapse" id="mainNavigation">
++            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Buka navigasi"><span class="navbar-toggler-icon"></span></button>
++            <div class="collapse navbar-collapse" id="mainNavigation">
+                 <ul class="navbar-nav ms-auto align-items-lg-center" id="sectionNavigation">
+                     <li class="nav-item"><a class="nav-link" href="#beranda">Beranda</a></li>
+                     <li class="nav-item"><a class="nav-link" href="#fitur">Fitur</a></li>
+@@ -128,10 +129,10 @@
+         </div>
+     </section>
+ 
+-    <section class="transparency-section section-space">
++    <section class="transparency-section section-space" id="transparansi">
+         <div class="container landing-container">
+             <div class="row align-items-center g-5">
+-                <div class="col-lg-6 transparency-copy"><span class="section-kicker">EXPLAINABLE AI · XAI</span><h2>Setiap sinyal punya <span class="text-uninlar-blue">alasan yang bisa ditelusuri.</span></h2><p>Skor risiko dihitung dari aturan yang transparan. AI membantu menjelaskan hasil dan menyusun rekomendasi—bukan menjadi satu-satunya penentu keputusan.</p><div class="transparency-points"><div><span class="point-check">✓</span><p><strong>Faktor terlihat jelas</strong><br>Indikator yang berkontribusi dapat diperiksa oleh pendamping.</p></div><div><span class="point-check">✓</span><p><strong>Rekomendasi tetap ditinjau manusia</strong><br>Keputusan intervensi berada pada tim akademik.</p></div></div><a class="text-link" href="{{ route('login') }}">Kenali UniNalar lebih dekat <span aria-hidden="true">→</span></a></div>
++                <div class="col-lg-6 transparency-copy"><span class="section-kicker">EXPLAINABLE AI · XAI</span><h2>Setiap sinyal punya <span class="text-uninlar-blue">alasan yang bisa ditelusuri.</span></h2><p>Rancangan analisis mengutamakan aturan yang transparan. Panel di samping adalah ilustrasi; perhitungan risiko otomatis dan penjelasan AI belum tersedia dalam aplikasi.</p><div class="transparency-points"><div><span class="point-check">✓</span><p><strong>Faktor terlihat jelas</strong><br>Indikator yang berkontribusi dapat diperiksa oleh pendamping.</p></div><div><span class="point-check">✓</span><p><strong>Rekomendasi tetap ditinjau manusia</strong><br>Keputusan intervensi berada pada tim akademik.</p></div></div><a class="text-link" href="{{ route('login') }}">Kenali UniNalar lebih dekat <span aria-hidden="true">→</span></a></div>
+                 <div class="col-lg-6"><div class="explanation-card"><div class="explanation-header"><div><span class="mini-label">CONTOH PENJELASAN</span><h3>Faktor yang perlu diperhatikan</h3></div><span class="simulation-tag"><i></i> Ilustrasi</span></div><div class="risk-sample"><div class="risk-score"><span>Skor risiko</span><strong>68<span>/100</span></strong><small>Nilai contoh, bukan prediksi aktual</small></div><div class="risk-status"><span class="status-indicator"></span> Perlu perhatian</div></div><div class="factor-list"><div class="factor-row"><div class="factor-title"><span>Kehadiran kuliah</span><b>Kontribusi ilustratif 35%</b></div><div class="factor-track"><i style="width: 72%"></i></div></div><div class="factor-row"><div class="factor-title"><span>Tren nilai</span><b>Kontribusi ilustratif 30%</b></div><div class="factor-track"><i style="width: 61%"></i></div></div><div class="factor-row"><div class="factor-title"><span>Ketuntasan studi</span><b>Kontribusi ilustratif 20%</b></div><div class="factor-track"><i style="width: 44%"></i></div></div></div><div class="recommendation-note"><span class="recommendation-icon" aria-hidden="true">✦</span><p><strong>Opsi tindak lanjut</strong><br>Jadwalkan percakapan akademik untuk memahami hambatan kehadiran.</p></div><p class="illustration-note">Faktor dan bobot di atas hanya ilustrasi. Aturan sebenarnya ditetapkan institusi.</p></div></div>
+             </div>
+         </div>
+diff --git a/routes/web.php b/routes/web.php
+index 6f0ff5a..32dbf1c 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -1,11 +1,14 @@
+ <?php
+ 
+ use App\Http\Controllers\AdminAcademicController;
++use App\Http\Controllers\AdminKelasKuliahController;
+ use App\Http\Controllers\AdminKrsReviewController;
++use App\Http\Controllers\Auth\LoginController;
++use App\Http\Controllers\DosenDashboardController;
+ use App\Http\Controllers\DosenNilaiController;
+ use App\Http\Controllers\MahasiswaDashboardController;
+ use App\Http\Controllers\MahasiswaKrsController;
+-use App\Http\Controllers\Auth\LoginController;
++use App\Http\Controllers\OwnerDashboardController;
+ use App\Models\User;
+ use Illuminate\Support\Facades\Auth;
+ use Illuminate\Support\Facades\Route;
+@@ -52,13 +55,11 @@
+         Route::put('/profil/kontak', [MahasiswaDashboardController::class, 'updateProfil'])->name('profil.update');
+     });
+ 
+-    Route::get('/dashboard/dosen', fn () => view('dashboard.role', [
+-        'role' => User::ROLE_LABELS[User::ROLE_DOSEN],
+-        'isDemoAccount' => str_ends_with(strtolower((string) Auth::user()->email), '@demo.uninlar.test'),
+-    ]))->middleware('level:2')->name('dashboard.dosen');
++    Route::get('/dashboard/dosen', [DosenDashboardController::class, 'index'])->middleware('level:2')->name('dashboard.dosen');
+     Route::middleware('level:2')->prefix('/dashboard/dosen')->name('dashboard.dosen.')->group(function () {
+         Route::get('/nilai', [DosenNilaiController::class, 'index'])->name('nilai');
+-        Route::post('/nilai/{nilai}/finalisasi', [DosenNilaiController::class, 'finalize'])->middleware('throttle:30,1')->name('nilai.finalize');
++        Route::put('/nilai/detail/{detail}', [DosenNilaiController::class, 'save'])->whereNumber('detail')->middleware('throttle:30,1')->name('nilai.save');
++        Route::post('/nilai/{nilai}/finalisasi', [DosenNilaiController::class, 'finalize'])->whereNumber('nilai')->middleware('throttle:30,1')->name('nilai.finalize');
+     });
+ 
+     Route::get('/dashboard/admin-akademik', fn () => view('dashboard.admin-akademik.index', [
+@@ -67,9 +68,10 @@
+     ]))->middleware('level:3')->name('dashboard.admin-akademik');
+ 
+     Route::prefix('/dashboard/admin-akademik')->name('dashboard.admin-akademik.')->middleware('level:3')->group(function () {
++        Route::resource('kelas-kuliah', AdminKelasKuliahController::class)->parameters(['kelas-kuliah' => 'kelas_kuliah'])->whereNumber('kelas_kuliah');
+         Route::get('/krs-pengajuan', [AdminKrsReviewController::class, 'index'])->name('krs-pengajuan.index');
+         Route::post('/krs-pengajuan/{history}/{decision}', [AdminKrsReviewController::class, 'decide'])
+-            ->whereIn('decision', ['disetujui', 'ditolak'])->middleware('throttle:30,1')->name('krs-pengajuan.decision');
++            ->whereNumber('history')->whereIn('decision', ['disetujui', 'ditolak'])->middleware('throttle:30,1')->name('krs-pengajuan.decision');
+         foreach (['program-studi', 'semester', 'mata-kuliah', 'dosen', 'mahasiswa'] as $resource) {
+             Route::resource($resource, AdminAcademicController::class)
+                 ->parameters([$resource => 'record'])
+@@ -78,10 +80,7 @@
+         }
+     });
+ 
+-    Route::get('/dashboard/owner', fn () => view('dashboard.role', [
+-        'role' => User::ROLE_LABELS[User::ROLE_KAPRODI],
+-        'isDemoAccount' => str_ends_with(strtolower((string) Auth::user()->email), '@demo.uninlar.test'),
+-    ]))->middleware('level:4')->name('dashboard.owner');
++    Route::get('/dashboard/owner', [OwnerDashboardController::class, 'index'])->middleware('level:4')->name('dashboard.owner');
+ 
+     Route::get('/area/mahasiswa', fn () => response()->json(['area' => 'mahasiswa']))
+         ->middleware('level:1,3,4')->name('area.mahasiswa');
+diff --git a/tests/Feature/DemoAccountAuthenticationTest.php b/tests/Feature/DemoAccountAuthenticationTest.php
+index d6653a9..94d6b20 100644
+--- a/tests/Feature/DemoAccountAuthenticationTest.php
++++ b/tests/Feature/DemoAccountAuthenticationTest.php
+@@ -54,7 +54,7 @@ public function test_demo_accounts_login_with_username_and_are_authorized_by_lev
+                     ->assertDontSee('0.4200');
+             } else {
+                 $dashboard->assertSee('Akun demo.')
+-                    ->assertSee('Ringkasan operasional belum tersedia.')
++                    ->assertSee($account['level'] === User::ROLE_DOSEN ? 'Profil dosen belum tertaut' : 'Data operasional belum tersedia')
+                     ->assertDontSee('0.4200');
+             }
+ 
+@@ -132,19 +132,19 @@ public function test_all_role_dashboards_render_one_shared_sidebar_with_only_the
+             User::ROLE_DOSEN => [
+                 'role' => 'Dosen',
+                 'dashboard' => 'dashboard.dosen',
+-                'allowed' => ['dashboard.dosen'],
++                'allowed' => ['dashboard.dosen.nilai'],
+                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.admin-akademik', 'dashboard.owner'],
+             ],
+             User::ROLE_ADMIN_AKADEMIK => [
+                 'role' => 'Admin Akademik',
+                 'dashboard' => 'dashboard.admin-akademik',
+-                'allowed' => ['dashboard.admin-akademik', 'dashboard.admin-akademik.program-studi.index', 'dashboard.admin-akademik.semester.index', 'dashboard.admin-akademik.mata-kuliah.index', 'dashboard.admin-akademik.dosen.index', 'dashboard.admin-akademik.mahasiswa.index'],
++                'allowed' => ['dashboard.admin-akademik.program-studi.index', 'dashboard.admin-akademik.semester.index', 'dashboard.admin-akademik.mata-kuliah.index', 'dashboard.admin-akademik.dosen.index', 'dashboard.admin-akademik.mahasiswa.index', 'dashboard.admin-akademik.kelas-kuliah.index', 'dashboard.admin-akademik.krs-pengajuan.index'],
+                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.owner'],
+             ],
+             User::ROLE_KAPRODI => [
+                 'role' => 'Kepala Program Studi',
+                 'dashboard' => 'dashboard.owner',
+-                'allowed' => ['dashboard.owner'],
++                'allowed' => [],
+                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.admin-akademik'],
+             ],
+         ];
+diff --git a/tests/Feature/LandingPageTest.php b/tests/Feature/LandingPageTest.php
+index 7475123..de7052b 100644
+--- a/tests/Feature/LandingPageTest.php
++++ b/tests/Feature/LandingPageTest.php
+@@ -11,6 +11,9 @@ public function test_landing_page_is_public_and_uses_the_existing_login_route():
+         $response = $this->get('/');
+ 
+         $response->assertOk()
++            ->assertSee('id="transparansi"', false)
++            ->assertSee('data-bs-target="#mainNavigation"', false)
++            ->assertSee('class="collapse navbar-collapse"', false)
+             ->assertViewIs('landing.index')
+             ->assertSee('Kenali Risiko Lebih Dini.', false)
+             ->assertSee('Pahami kondisi akademik mahasiswa melalui analisis data yang transparan', false)
+diff --git a/tests/TestCase.php b/tests/TestCase.php
+index fe1ffc2..0e7a6d4 100644
+--- a/tests/TestCase.php
++++ b/tests/TestCase.php
+@@ -6,5 +6,15 @@
+ 
+ abstract class TestCase extends BaseTestCase
+ {
+-    //
++    public function createApplication()
++    {
++        $app = parent::createApplication();
++        // Runs before RefreshDatabase can execute any schema/data operation.
++        if (! $app->environment('testing') || config('database.default') !== 'sqlite'
++            || config('database.connections.sqlite.database') !== ':memory:') {
++            throw new \RuntimeException('This test suite requires verified SQLite :memory: isolation.');
++        }
++
++        return $app;
++    }
+ }

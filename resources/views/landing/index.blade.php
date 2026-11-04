@@ -4,12 +4,13 @@
 
 @section('content')
 <header class="site-header">
-    <nav class="navbar navbar-expand" aria-label="Navigasi utama">
+    <nav class="navbar navbar-expand-lg" aria-label="Navigasi utama">
         <div class="container landing-container">
             <a class="navbar-brand brand-lockup" href="#beranda" aria-label="UniNalar, Beranda">
                 <img src="{{ asset('images/UniNalar Sidebar.png') }}" alt="UniNalar" width="174" height="58">
             </a>
-            <div class="navbar-collapse" id="mainNavigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Buka navigasi"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="mainNavigation">
                 <ul class="navbar-nav ms-auto align-items-lg-center" id="sectionNavigation">
                     <li class="nav-item"><a class="nav-link" href="#beranda">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link" href="#fitur">Fitur</a></li>
@@ -128,10 +129,10 @@
         </div>
     </section>
 
-    <section class="transparency-section section-space">
+    <section class="transparency-section section-space" id="transparansi">
         <div class="container landing-container">
             <div class="row align-items-center g-5">
-                <div class="col-lg-6 transparency-copy"><span class="section-kicker">EXPLAINABLE AI · XAI</span><h2>Setiap sinyal punya <span class="text-uninlar-blue">alasan yang bisa ditelusuri.</span></h2><p>Skor risiko dihitung dari aturan yang transparan. AI membantu menjelaskan hasil dan menyusun rekomendasi—bukan menjadi satu-satunya penentu keputusan.</p><div class="transparency-points"><div><span class="point-check">✓</span><p><strong>Faktor terlihat jelas</strong><br>Indikator yang berkontribusi dapat diperiksa oleh pendamping.</p></div><div><span class="point-check">✓</span><p><strong>Rekomendasi tetap ditinjau manusia</strong><br>Keputusan intervensi berada pada tim akademik.</p></div></div><a class="text-link" href="{{ route('login') }}">Kenali UniNalar lebih dekat <span aria-hidden="true">→</span></a></div>
+                <div class="col-lg-6 transparency-copy"><span class="section-kicker">EXPLAINABLE AI · XAI</span><h2>Setiap sinyal punya <span class="text-uninlar-blue">alasan yang bisa ditelusuri.</span></h2><p>Rancangan analisis mengutamakan aturan yang transparan. Panel di samping adalah ilustrasi; perhitungan risiko otomatis dan penjelasan AI belum tersedia dalam aplikasi.</p><div class="transparency-points"><div><span class="point-check">✓</span><p><strong>Faktor terlihat jelas</strong><br>Indikator yang berkontribusi dapat diperiksa oleh pendamping.</p></div><div><span class="point-check">✓</span><p><strong>Rekomendasi tetap ditinjau manusia</strong><br>Keputusan intervensi berada pada tim akademik.</p></div></div><a class="text-link" href="{{ route('login') }}">Kenali UniNalar lebih dekat <span aria-hidden="true">→</span></a></div>
                 <div class="col-lg-6"><div class="explanation-card"><div class="explanation-header"><div><span class="mini-label">CONTOH PENJELASAN</span><h3>Faktor yang perlu diperhatikan</h3></div><span class="simulation-tag"><i></i> Ilustrasi</span></div><div class="risk-sample"><div class="risk-score"><span>Skor risiko</span><strong>68<span>/100</span></strong><small>Nilai contoh, bukan prediksi aktual</small></div><div class="risk-status"><span class="status-indicator"></span> Perlu perhatian</div></div><div class="factor-list"><div class="factor-row"><div class="factor-title"><span>Kehadiran kuliah</span><b>Kontribusi ilustratif 35%</b></div><div class="factor-track"><i style="width: 72%"></i></div></div><div class="factor-row"><div class="factor-title"><span>Tren nilai</span><b>Kontribusi ilustratif 30%</b></div><div class="factor-track"><i style="width: 61%"></i></div></div><div class="factor-row"><div class="factor-title"><span>Ketuntasan studi</span><b>Kontribusi ilustratif 20%</b></div><div class="factor-track"><i style="width: 44%"></i></div></div></div><div class="recommendation-note"><span class="recommendation-icon" aria-hidden="true">✦</span><p><strong>Opsi tindak lanjut</strong><br>Jadwalkan percakapan akademik untuk memahami hambatan kehadiran.</p></div><p class="illustration-note">Faktor dan bobot di atas hanya ilustrasi. Aturan sebenarnya ditetapkan institusi.</p></div></div>
             </div>
         </div>

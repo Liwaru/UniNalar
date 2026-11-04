@@ -1,0 +1,177 @@
+﻿{
+    "identity": {
+        "db": "qa_p3_mw28gmsp",
+        "uuid": "2516654f-d85f-11f1-80a4-7e44b1593a8f",
+        "version": "8.4.11"
+    },
+    "counts": {
+        "users": 5,
+        "program_studi": 17,
+        "semester": 16,
+        "mata_kuliah": 18,
+        "dosen": 17,
+        "mahasiswa": 25,
+        "kelas_kuliah": 18,
+        "krs": 1,
+        "krs_detail": 2,
+        "krs_pengajuan_riwayat": 2,
+        "nilai": 2,
+        "kehadiran": 8
+    },
+    "students": [
+        {
+            "nim": "2026010001",
+            "nama": "Alya Rahma Putri",
+            "user_id": 1
+        },
+        {
+            "nim": "2026010002",
+            "nama": "Bima Satya Pradana",
+            "user_id": null
+        },
+        {
+            "nim": "2026020003",
+            "nama": "Citra Ayu Lestari",
+            "user_id": null
+        },
+        {
+            "nim": "2026030004",
+            "nama": "Dimas Arya Saputra",
+            "user_id": null
+        },
+        {
+            "nim": "2026010005",
+            "nama": "Elisa Putri Wardani",
+            "user_id": null
+        },
+        {
+            "nim": "2026020006",
+            "nama": "Farhan Dwi Pratama",
+            "user_id": null
+        },
+        {
+            "nim": "2026030007",
+            "nama": "Gita Maharani",
+            "user_id": null
+        },
+        {
+            "nim": "2026010008",
+            "nama": "Hana Safira",
+            "user_id": null
+        },
+        {
+            "nim": "2026020009",
+            "nama": "Ilham Fadli",
+            "user_id": null
+        },
+        {
+            "nim": "2026030010",
+            "nama": "Jihan Nur Aulia",
+            "user_id": null
+        },
+        {
+            "nim": "2026010011",
+            "nama": "Kevin Aditya",
+            "user_id": null
+        },
+        {
+            "nim": "2026020012",
+            "nama": "Laras Sekar Utami",
+            "user_id": null
+        },
+        {
+            "nim": "2026030013",
+            "nama": "Maya Kartika",
+            "user_id": null
+        },
+        {
+            "nim": "2026010014",
+            "nama": "Naufal Ramadhan",
+            "user_id": null
+        },
+        {
+            "nim": "2026020015",
+            "nama": "Olivia Kirana",
+            "user_id": null
+        },
+        {
+            "nim": "2026030016",
+            "nama": "Putra Mahendra",
+            "user_id": null
+        },
+        {
+            "nim": "2026010017",
+            "nama": "Rani Puspita",
+            "user_id": null
+        },
+        {
+            "nim": "2026020018",
+            "nama": "Satria Wirawan",
+            "user_id": null
+        },
+        {
+            "nim": "2026030019",
+            "nama": "Tania Kusuma",
+            "user_id": null
+        },
+        {
+            "nim": "2026010020",
+            "nama": "Umar Fariz",
+            "user_id": null
+        },
+        {
+            "nim": "2026020021",
+            "nama": "Vina Amalia",
+            "user_id": null
+        },
+        {
+            "nim": "2026030022",
+            "nama": "Wahyu Permana",
+            "user_id": null
+        },
+        {
+            "nim": "2026010023",
+            "nama": "Yasmin Zahra",
+            "user_id": null
+        },
+        {
+            "nim": "2026020024",
+            "nama": "Zaki Firmansyah",
+            "user_id": null
+        },
+        {
+            "nim": "DEMO-20260001",
+            "nama": "Sentinel Sintetis Terisolasi",
+            "user_id": null
+        }
+    ],
+    "histories": [
+        {
+            "krs_id": 1,
+            "versi": 1,
+            "status": "ditolak",
+            "snapshot_kelas": "{\"kelas\": [{\"sks\": 3, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 1, \"kelas_kuliah_id\": 1, \"kode_mata_kuliah\": \"TI101\", \"nama_mata_kuliah\": \"Algoritma dan Pemrograman\"}]}"
+        },
+        {
+            "krs_id": 1,
+            "versi": 2,
+            "status": "disetujui",
+            "snapshot_kelas": "{\"kelas\": [{\"sks\": 3, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 1, \"kelas_kuliah_id\": 1, \"kode_mata_kuliah\": \"TI101\", \"nama_mata_kuliah\": \"Algoritma dan Pemrograman\"}, {\"sks\": 2, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 2, \"kelas_kuliah_id\": 2, \"kode_mata_kuliah\": \"TI102\", \"nama_mata_kuliah\": \"Matematika Diskrit\"}]}"
+        }
+    ],
+    "grades": [
+        {
+            "nilai_angka": "90.00",
+            "nilai_huruf": "A",
+            "nilai_mutu": "4.00",
+            "final_at": "2026-11-04 14:59:44"
+        },
+        {
+            "nilai_angka": "78.00",
+            "nilai_huruf": "B",
+            "nilai_mutu": "3.00",
+            "final_at": "2026-11-04 14:59:44"
+        }
+    ],
+    "provenance_rows": 131
+}

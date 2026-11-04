@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AnalisisRisiko;
 use App\Models\Kehadiran;
 use App\Models\Krs;
 use App\Models\Nilai;
 use App\Models\RekomendasiIntervensi;
 use App\Models\TindakLanjut;
-use App\Services\MahasiswaOperationalData;
 use App\Services\AcademicGradeSummary;
+use App\Services\MahasiswaOperationalData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -19,9 +18,7 @@ use Illuminate\View\View;
 
 class MahasiswaDashboardController extends Controller
 {
-    public function __construct(private readonly MahasiswaOperationalData $data, private readonly AcademicGradeSummary $gradeSummary)
-    {
-    }
+    public function __construct(private readonly MahasiswaOperationalData $data, private readonly AcademicGradeSummary $gradeSummary) {}
 
     public function index(Request $request): View
     {
@@ -171,9 +168,9 @@ class MahasiswaDashboardController extends Controller
         abort_unless($mahasiswa, 404);
 
         $validated = $request->validate([
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('mahasiswa', 'email')->ignore($mahasiswa->id)],
+            'email' => ['nullable', 'email', 'max:255', 'not_regex:/@demo\.uninlar\.test$/i', Rule::unique('mahasiswa', 'email')->ignore($mahasiswa->id)],
             'no_telepon' => ['nullable', 'string', 'max:30'],
-        ]);
+        ], ['email.not_regex' => 'Domain email tersebut tidak dapat digunakan untuk profil akademik ini.']);
 
         $mahasiswa->fill($validated)->save();
 
@@ -194,6 +191,7 @@ class MahasiswaDashboardController extends Controller
                 $scores = Schema::hasTable('nilai')
                     ? $krs->details->map(fn ($detail) => $detail->nilai?->nilai_angka)->filter(fn ($value) => $value !== null)
                     : collect();
+
                 return [
                     'label' => $krs->semester->kode,
                     'nilai' => $scores->isNotEmpty() ? round((float) $scores->avg(), 2) : null,
@@ -220,6 +218,7 @@ class MahasiswaDashboardController extends Controller
 
             if ($canonical === false) {
                 $unknown++;
+
                 continue;
             }
 

@@ -1,4 +1,4 @@
-import 'bootstrap';
+import { Collapse } from 'bootstrap';
 import Chart from 'chart.js/auto';
 
 const currentUrl = new URL(window.location.href);
@@ -125,6 +125,29 @@ if (sectionNavigation) {
         .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
         .filter(Boolean);
     const siteHeader = document.querySelector('.site-header');
+    const mobileMenu = document.getElementById('mainNavigation');
+    let pendingNavigation = null;
+
+    mobileMenu?.addEventListener('shown.bs.collapse', () => {
+        if (pendingNavigation) Collapse.getOrCreateInstance(mobileMenu).hide();
+    });
+    mobileMenu?.addEventListener('hidden.bs.collapse', () => {
+        if (!pendingNavigation) return;
+        const { target, hash } = pendingNavigation;
+        pendingNavigation = null;
+        window.history.pushState(null, '', hash);
+        target.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    sectionLinks.forEach((link) => link.addEventListener('click', (event) => {
+        if (!window.matchMedia('(max-width: 991.98px)').matches || !mobileMenu
+            || !(mobileMenu.classList.contains('show') || mobileMenu.classList.contains('collapsing'))) return;
+        const target = document.getElementById(link.hash.slice(1));
+        if (!target) return;
+        event.preventDefault();
+        pendingNavigation = { target, hash: link.hash };
+        if (mobileMenu.classList.contains('show')) Collapse.getOrCreateInstance(mobileMenu).hide();
+    }));
 
     const setActiveSection = (sectionId) => {
         sectionLinks.forEach((link) => {
@@ -141,7 +164,8 @@ if (sectionNavigation) {
     };
 
     const updateActiveSection = () => {
-        const activationLine = (siteHeader?.getBoundingClientRect().bottom ?? 0) + 12;
+        const anchorOffset = sectionHeadings[0] ? parseFloat(getComputedStyle(sectionHeadings[0]).scrollMarginTop) || 0 : 0;
+        const activationLine = Math.max((siteHeader?.getBoundingClientRect().bottom ?? 0) + 12, anchorOffset + 1);
         const activeHeading = sectionHeadings
             .filter((heading) => heading.getBoundingClientRect().top <= activationLine)
             .at(-1);

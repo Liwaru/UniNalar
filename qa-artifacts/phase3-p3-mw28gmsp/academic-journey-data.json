@@ -1,0 +1,57 @@
+﻿{
+    "identity": {
+        "db": "qa_p3_mw28gmsp",
+        "uuid": "2516654f-d85f-11f1-80a4-7e44b1593a8f",
+        "version": "8.4.11"
+    },
+    "counts": {
+        "users": 5,
+        "program_studi": 1,
+        "semester": 1,
+        "mata_kuliah": 2,
+        "dosen": 1,
+        "mahasiswa": 1,
+        "kelas_kuliah": 2,
+        "krs": 1,
+        "krs_detail": 2,
+        "krs_pengajuan_riwayat": 2,
+        "nilai": 2,
+        "kehadiran": 0
+    },
+    "students": [
+        {
+            "nim": "2026010001",
+            "nama": "Alya Rahma Putri",
+            "user_id": 1
+        }
+    ],
+    "histories": [
+        {
+            "krs_id": 1,
+            "versi": 1,
+            "status": "ditolak",
+            "snapshot_kelas": "{\"kelas\": [{\"sks\": 3, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 1, \"kelas_kuliah_id\": 1, \"kode_mata_kuliah\": \"TI101\", \"nama_mata_kuliah\": \"Algoritma dan Pemrograman\"}]}"
+        },
+        {
+            "krs_id": 1,
+            "versi": 2,
+            "status": "disetujui",
+            "snapshot_kelas": "{\"kelas\": [{\"sks\": 3, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 1, \"kelas_kuliah_id\": 1, \"kode_mata_kuliah\": \"TI101\", \"nama_mata_kuliah\": \"Algoritma dan Pemrograman\"}, {\"sks\": 2, \"kode_kelas\": \"A\", \"mata_kuliah_id\": 2, \"kelas_kuliah_id\": 2, \"kode_mata_kuliah\": \"TI102\", \"nama_mata_kuliah\": \"Matematika Diskrit\"}]}"
+        }
+    ],
+    "grades": [
+        {
+            "nilai_angka": "90.00",
+            "nilai_huruf": "A",
+            "nilai_mutu": "4.00",
+            "final_at": "2026-11-04 14:59:44"
+        },
+        {
+            "nilai_angka": "78.00",
+            "nilai_huruf": "B",
+            "nilai_mutu": "3.00",
+            "final_at": "2026-11-04 14:59:44"
+        }
+    ],
+    "provenance_rows": 20
+}

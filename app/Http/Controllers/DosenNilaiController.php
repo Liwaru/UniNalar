@@ -2,47 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Dosen;
-use App\Models\KelasKuliah;
-use App\Models\Nilai;
+use App\Services\GradeEntryService;
 use App\Services\GradeFinalizationService;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\LecturerAcademicData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class DosenNilaiController extends Controller
 {
-    public function __construct(private readonly GradeFinalizationService $finalization) {}
+    public function __construct(private readonly GradeFinalizationService $finalization, private readonly LecturerAcademicData $data, private readonly GradeEntryService $entries) {}
 
     public function index(Request $request): View
     {
-        $lecturer = Dosen::query()->where('user_id', $request->user()->id)->where('aktif', true)->first();
-        $available = Schema::hasTable('nilai') && $this->finalization->workflowAvailable();
+        $available = $this->finalization->workflowAvailable();
+        $lecturer = $this->data->profile($request->user());
         $classes = $lecturer && $available
-            ? KelasKuliah::query()->where('dosen_id', $lecturer->id)
-                ->whereHas('mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
-                    ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')))
-                ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
+            ? $this->data->classes($lecturer)
                 ->with(['mataKuliah', 'semester', 'krsDetails' => fn ($details) => $details
-                    ->whereHas('krs', fn (Builder $krs) => $krs->where('status', 'disetujui')
-                        ->whereHas('mahasiswa', fn (Builder $student) => $student->where('nim', 'not like', 'DEMO%')
-                            ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
+                    ->whereIn('id', $this->data->details($lecturer)->select('krs_detail.id'))
                     ->with(['krs.mahasiswa', 'nilai'])])
-                ->orderByDesc('semester_id')->orderBy('mata_kuliah_id')->get()
+                ->orderByDesc('semester_id')->orderBy('mata_kuliah_id')->paginate(10)
             : collect();
 
         return view('dashboard.dosen.nilai', [
             'lecturer' => $lecturer,
             'classes' => $classes,
             'available' => $available,
+            'gradePoints' => config('academic.grade_points', []),
         ]);
     }
 
-    public function finalize(Request $request, Nilai $nilai): RedirectResponse
+    public function save(Request $request, int $detail): RedirectResponse
     {
-        $this->finalization->finalize($request->user(), $nilai->id);
+        $this->entries->save($request->user(), $detail, $request->only(['nilai_angka', 'nilai_huruf', 'revision']));
+
+        return back()->with('status', 'Nilai tersimpan. Nilai belum dikunci sampai difinalisasi.');
+    }
+
+    public function finalize(Request $request, int $nilai): RedirectResponse
+    {
+        $this->finalization->finalize($request->user(), $nilai);
 
         return back()->with('status', 'Nilai berhasil difinalisasi.');
     }

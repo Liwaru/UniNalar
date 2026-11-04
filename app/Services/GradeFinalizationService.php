@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Dosen;
 use App\Models\Nilai;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -14,7 +12,7 @@ class GradeFinalizationService
 {
     public function workflowAvailable(): bool
     {
-        if (! Schema::hasTable('nilai')) {
+        if (! app(LecturerAcademicData::class)->available()) {
             return false;
         }
 
@@ -25,7 +23,8 @@ class GradeFinalizationService
             return false;
         }
 
-        $hasFinalizedAtIndex = collect(Schema::getIndexes('nilai'))->contains(
+        $indexes = Schema::getIndexes('nilai');
+        $hasFinalizedAtIndex = collect($indexes)->contains(
             fn (array $index): bool => $index['columns'] === ['final_at'],
         );
         $foreignKeys = Schema::getForeignKeys('nilai');
@@ -40,24 +39,22 @@ class GradeFinalizationService
             && strtolower($foreignKey['on_delete']) === 'cascade'
         );
 
-        return $hasFinalizedAtIndex && $hasRestrictedUserForeignKey && $hasDetailForeignKey;
+        $hasUniqueDetail = collect($indexes)->contains(fn (array $index): bool => $index['unique'] && $index['columns'] === ['krs_detail_id']);
+
+        return $hasFinalizedAtIndex && $hasRestrictedUserForeignKey && $hasDetailForeignKey && $hasUniqueDetail;
     }
 
     public function finalize(User $user, int $gradeId): Nilai
     {
         abort_unless((int) $user->level === User::ROLE_DOSEN, 403);
         abort_unless($this->workflowAvailable(), 503, 'Finalisasi nilai belum tersedia sampai schema pendukung diterapkan.');
-        $lecturer = Dosen::query()->where('user_id', $user->id)->where('aktif', true)->firstOrFail();
+        $data = app(LecturerAcademicData::class);
+        $lecturer = $data->profile($user);
+        abort_unless($lecturer, 404);
 
-        return DB::transaction(function () use ($user, $lecturer, $gradeId): Nilai {
+        return DB::transaction(function () use ($user, $lecturer, $gradeId, $data): Nilai {
             $grade = Nilai::query()->whereKey($gradeId)
-                ->whereHas('krsDetail.krs', fn (Builder $krs) => $krs->where('status', 'disetujui')
-                    ->whereHas('mahasiswa', fn (Builder $student) => $student->where('nim', 'not like', 'DEMO%')
-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
-                ->whereHas('krsDetail.kelasKuliah', fn (Builder $class) => $class->where('dosen_id', $lecturer->id)
-                    ->whereHas('semester', fn (Builder $semester) => $semester->where('kode', 'not like', 'DEMO%'))
-                    ->whereHas('mataKuliah', fn (Builder $course) => $course->where('kode', 'not like', 'DEMO%')
-                        ->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO'))))
+                ->whereIn('krs_detail_id', $data->details($lecturer)->select('krs_detail.id'))
                 ->lockForUpdate()->firstOrFail();
 
             if ($grade->final_at !== null) {
@@ -65,6 +62,9 @@ class GradeFinalizationService
             }
 
             $letter = strtoupper(trim((string) $grade->nilai_huruf));
+            if ($grade->nilai_angka !== null && ((float) $grade->nilai_angka < 0 || (float) $grade->nilai_angka > 100)) {
+                throw ValidationException::withMessages(['nilai' => 'Nilai angka berada di luar rentang 0–100.']);
+            }
             $gradePoints = config('academic.grade_points', []);
             if ($letter === '' || ! array_key_exists($letter, $gradePoints)) {
                 throw ValidationException::withMessages(['nilai' => 'Nilai huruf belum tercatat atau tidak terdapat pada skala nilai yang dikonfigurasi.']);

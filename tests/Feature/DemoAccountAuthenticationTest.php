@@ -54,7 +54,7 @@ class DemoAccountAuthenticationTest extends TestCase
                     ->assertDontSee('0.4200');
             } else {
                 $dashboard->assertSee('Akun demo.')
-                    ->assertSee('Ringkasan operasional belum tersedia.')
+                    ->assertSee($account['level'] === User::ROLE_DOSEN ? 'Profil dosen belum tertaut' : 'Data operasional belum tersedia')
                     ->assertDontSee('0.4200');
             }
 
@@ -132,19 +132,19 @@ class DemoAccountAuthenticationTest extends TestCase
             User::ROLE_DOSEN => [
                 'role' => 'Dosen',
                 'dashboard' => 'dashboard.dosen',
-                'allowed' => ['dashboard.dosen'],
+                'allowed' => ['dashboard.dosen.nilai'],
                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.admin-akademik', 'dashboard.owner'],
             ],
             User::ROLE_ADMIN_AKADEMIK => [
                 'role' => 'Admin Akademik',
                 'dashboard' => 'dashboard.admin-akademik',
-                'allowed' => ['dashboard.admin-akademik', 'dashboard.admin-akademik.program-studi.index', 'dashboard.admin-akademik.semester.index', 'dashboard.admin-akademik.mata-kuliah.index', 'dashboard.admin-akademik.dosen.index', 'dashboard.admin-akademik.mahasiswa.index'],
+                'allowed' => ['dashboard.admin-akademik.program-studi.index', 'dashboard.admin-akademik.semester.index', 'dashboard.admin-akademik.mata-kuliah.index', 'dashboard.admin-akademik.dosen.index', 'dashboard.admin-akademik.mahasiswa.index', 'dashboard.admin-akademik.kelas-kuliah.index', 'dashboard.admin-akademik.krs-pengajuan.index'],
                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.owner'],
             ],
             User::ROLE_KAPRODI => [
                 'role' => 'Kepala Program Studi',
                 'dashboard' => 'dashboard.owner',
-                'allowed' => ['dashboard.owner'],
+                'allowed' => [],
                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.admin-akademik'],
             ],
         ];

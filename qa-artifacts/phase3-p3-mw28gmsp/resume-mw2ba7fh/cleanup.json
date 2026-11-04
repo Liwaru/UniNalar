@@ -1,0 +1,7 @@
+{
+  "containers": 3,
+  "networks": 2,
+  "temporaryFiles": 6,
+  "operationalVolume": "uninalar_uninlar_mysql_data",
+  "operationalServicesHealthy": true
+}

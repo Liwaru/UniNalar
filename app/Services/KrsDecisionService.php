@@ -21,16 +21,7 @@ class KrsDecisionService
             $history = KrsPengajuanRiwayat::query()->whereKey($historyId)->lockForUpdate()->firstOrFail();
             $latest = KrsPengajuanRiwayat::query()->where('krs_id', $krs->id)->orderByDesc('versi')->lockForUpdate()->first();
 
-            $krs->load(['mahasiswa.programStudi', 'semester', 'details.kelasKuliah.mataKuliah.programStudi']);
-            abort_if(
-                str_starts_with(strtoupper($krs->mahasiswa->nim), 'DEMO')
-                || str_ends_with(strtoupper($krs->mahasiswa->programStudi?->kode ?? ''), '-DEMO')
-                || str_starts_with(strtoupper($krs->semester->kode), 'DEMO')
-                || $krs->details->contains(fn ($detail) => str_starts_with(strtoupper($detail->kelasKuliah?->mataKuliah?->kode ?? ''), 'DEMO')
-                    || str_ends_with(strtoupper($detail->kelasKuliah?->mataKuliah?->programStudi?->kode ?? ''), '-DEMO')),
-                404,
-            );
-
+            abort_unless(OperationalAcademicData::krs()->whereKey($krs->id)->exists(), 404);
             if ($krs->status !== 'menunggu' || $history->status !== 'menunggu' || $latest?->id !== $history->id) {
                 throw ValidationException::withMessages(['krs' => 'Pengajuan ini sudah diputuskan atau bukan versi yang sedang menunggu.']);
             }
