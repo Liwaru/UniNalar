@@ -1,0 +1,17 @@
+- generic [active] [ref=f29e1]:
+  - banner [ref=f29e2]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f29e3] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - strong [ref=f29e4]: UniNalar
+    - navigation "Navigasi" [ref=f29e5]:
+      - button "Keluar" [ref=f29e7] [cursor=pointer]
+  - main [ref=f29e8]:
+    - heading "Dashboard Dosen" [level=1] [ref=f29e9]
+    - paragraph [ref=f29e10]: Selamat datang, Dosen Demo.
+    - paragraph [ref=f29e11]: "Role: Dosen"
+    - status [ref=f29e12]:
+      - strong [ref=f29e13]: Akun demo.
+      - text: Identitas dan data yang terkait akun ini bukan data operasional.
+    - status [ref=f29e14]:
+      - strong [ref=f29e15]: Ringkasan operasional belum tersedia.
+      - paragraph [ref=f29e16]: Halaman fitur untuk role ini belum tersedia pada aplikasi saat ini.

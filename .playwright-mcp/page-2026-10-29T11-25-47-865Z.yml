@@ -1,0 +1,61 @@
+- generic [ref=f17e2]:
+  - complementary "Navigasi Admin Akademik" [ref=f17e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f17e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f17e5]:
+        - strong [ref=f17e6]: UniNalar
+        - generic [ref=f17e7]: Ruang Admin Akademik
+    - navigation "Menu utama" [ref=f17e8]:
+      - paragraph [ref=f17e9]: Menu utama
+      - link "Dashboard" [ref=f17e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik
+      - link "Program Studi" [ref=f17e16] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/program-studi
+      - link "Semester" [ref=f17e19] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/semester
+      - link "Mata Kuliah" [ref=f17e23] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mata-kuliah
+      - link "Dosen" [ref=f17e27] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/dosen
+      - link "Mahasiswa" [ref=f17e31] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mahasiswa
+    - generic [ref=f17e35]:
+      - generic [ref=f17e36]:
+        - generic [aria-hidden] [ref=f17e37]: D
+        - generic [ref=f17e38]:
+          - strong [ref=f17e39]: Akun demo
+          - generic [ref=f17e40]: Admin Akademik
+      - button "Keluar" [ref=f17e42] [cursor=pointer]
+  - main [ref=f17e45]:
+    - generic [ref=f17e46]:
+      - generic [ref=f17e48]:
+        - text: Admin Akademik
+        - heading "Semester" [level=1] [ref=f17e49]
+      - status [ref=f17e50]:
+        - strong [ref=f17e51]: Akun demo.
+        - text: Identitas dan data yang terkait akun ini bukan data operasional.
+      - generic [ref=f17e52]:
+        - generic [ref=f17e53]:
+          - paragraph [ref=f17e55]: Kelola semester operasional. Data demo tidak ditampilkan dalam daftar ini.
+          - link "Tambah Semester" [ref=f17e56] [cursor=pointer]:
+            - /url: http://localhost:8080/dashboard/admin-akademik/semester/create
+        - generic [ref=f17e57]:
+          - generic [ref=f17e58]: Cari data
+          - searchbox "Cari data" [ref=f17e59]
+          - button "Cari" [ref=f17e60] [cursor=pointer]
+        - table [ref=f17e62]:
+          - rowgroup [ref=f17e63]:
+            - row [ref=f17e64]:
+              - columnheader "Kode" [ref=f17e65]
+              - columnheader "Tahun ajaran" [ref=f17e66]
+              - columnheader "Periode" [ref=f17e67]
+              - columnheader "Mulai" [ref=f17e68]
+              - columnheader "Selesai" [ref=f17e69]
+              - columnheader "Status" [ref=f17e70]
+              - columnheader "Aksi" [ref=f17e71]
+          - rowgroup [ref=f17e72]:
+            - row [ref=f17e73]:
+              - cell "Data operasional belum tersedia. Tambahkan data dari sumber resmi atau sesuaikan pencarian." [ref=f17e74]:
+                - generic [ref=f17e75]:
+                  - strong [ref=f17e76]: Data operasional belum tersedia.
+                  - generic [ref=f17e77]: Tambahkan data dari sumber resmi atau sesuaikan pencarian.

@@ -1,0 +1,61 @@
+- generic [ref=f19e2]:
+  - complementary "Navigasi Admin Akademik" [ref=f19e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f19e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f19e5]:
+        - strong [ref=f19e6]: UniNalar
+        - generic [ref=f19e7]: Ruang Admin Akademik
+    - navigation "Menu utama" [ref=f19e8]:
+      - paragraph [ref=f19e9]: Menu utama
+      - link "Dashboard" [ref=f19e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik
+      - link "Program Studi" [ref=f19e16] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/program-studi
+      - link "Semester" [ref=f19e19] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/semester
+      - link "Mata Kuliah" [ref=f19e23] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mata-kuliah
+      - link "Dosen" [ref=f19e27] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/dosen
+      - link "Mahasiswa" [ref=f19e31] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mahasiswa
+    - generic [ref=f19e35]:
+      - generic [ref=f19e36]:
+        - generic [aria-hidden] [ref=f19e37]: D
+        - generic [ref=f19e38]:
+          - strong [ref=f19e39]: Akun demo
+          - generic [ref=f19e40]: Admin Akademik
+      - button "Keluar" [ref=f19e42] [cursor=pointer]
+  - main [ref=f19e45]:
+    - generic [ref=f19e46]:
+      - generic [ref=f19e48]:
+        - text: Admin Akademik
+        - heading "Data Dosen" [level=1] [ref=f19e49]
+      - status [ref=f19e50]:
+        - strong [ref=f19e51]: Akun demo.
+        - text: Identitas dan data yang terkait akun ini bukan data operasional.
+      - generic [ref=f19e52]:
+        - generic [ref=f19e53]:
+          - paragraph [ref=f19e55]: Kelola profil dosen operasional. Data demo tidak ditampilkan dalam daftar ini.
+          - link "Tambah Profil dosen" [ref=f19e56] [cursor=pointer]:
+            - /url: http://localhost:8080/dashboard/admin-akademik/dosen/create
+        - generic [ref=f19e57]:
+          - generic [ref=f19e58]: Cari data
+          - searchbox "Cari data" [ref=f19e59]
+          - button "Cari" [ref=f19e60] [cursor=pointer]
+        - table [ref=f19e62]:
+          - rowgroup [ref=f19e63]:
+            - row [ref=f19e64]:
+              - columnheader "NIDN" [ref=f19e65]
+              - columnheader "Nama" [ref=f19e66]
+              - columnheader "Email" [ref=f19e67]
+              - columnheader "Program studi" [ref=f19e68]
+              - columnheader "Username akun" [ref=f19e69]
+              - columnheader "Status" [ref=f19e70]
+              - columnheader "Aksi" [ref=f19e71]
+          - rowgroup [ref=f19e72]:
+            - row [ref=f19e73]:
+              - cell "Data operasional belum tersedia. Tambahkan data dari sumber resmi atau sesuaikan pencarian." [ref=f19e74]:
+                - generic [ref=f19e75]:
+                  - strong [ref=f19e76]: Data operasional belum tersedia.
+                  - generic [ref=f19e77]: Tambahkan data dari sumber resmi atau sesuaikan pencarian.

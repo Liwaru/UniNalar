@@ -1,0 +1,3 @@
+- generic [ref=f30e8]:
+  - heading "Application up" [level=2] [ref=f30e9]
+  - paragraph [ref=f30e10]: HTTP request received. Response rendered in 2187ms.

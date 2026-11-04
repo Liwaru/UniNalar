@@ -1,0 +1,31 @@
+- generic [ref=f24e2]:
+  - complementary "Navigasi Kepala Program Studi" [ref=f24e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f24e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f24e5]:
+        - strong [ref=f24e6]: UniNalar
+        - generic [ref=f24e7]: Ruang Kepala Program Studi
+    - navigation "Menu utama" [ref=f24e8]:
+      - paragraph [ref=f24e9]: Menu utama
+      - link "Dashboard" [ref=f24e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/owner
+    - generic [ref=f24e16]:
+      - generic [ref=f24e17]:
+        - generic [aria-hidden] [ref=f24e18]: D
+        - generic [ref=f24e19]:
+          - strong [ref=f24e20]: Akun demo
+          - generic [ref=f24e21]: Kepala Program Studi
+      - button "Keluar" [ref=f24e23] [cursor=pointer]
+  - main [ref=f24e26]:
+    - generic [ref=f24e27]:
+      - generic [ref=f24e29]:
+        - text: Kepala Program Studi
+        - heading "Dashboard Kepala Program Studi" [level=1] [ref=f24e30]
+      - status [ref=f24e31]:
+        - strong [ref=f24e32]: Akun demo.
+        - text: Identitas dan data yang terkait akun ini bukan data operasional.
+      - paragraph [ref=f24e33]: Selamat datang, Kepala Program Studi Demo.
+      - paragraph [ref=f24e34]: "Role: Kepala Program Studi"
+      - status [ref=f24e35]:
+        - strong [ref=f24e36]: Ringkasan operasional belum tersedia.
+        - paragraph [ref=f24e37]: Halaman fitur untuk role ini belum tersedia pada aplikasi saat ini.

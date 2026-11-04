@@ -1,0 +1,43 @@
+- generic [ref=f1e2]:
+  - complementary "Navigasi Mahasiswa" [ref=f1e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f1e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f1e5]:
+        - strong [ref=f1e6]: UniNalar
+        - generic [ref=f1e7]: Ruang Mahasiswa
+    - navigation "Menu utama" [ref=f1e8]:
+      - paragraph [ref=f1e9]: Menu utama
+      - link "KRS & Mata Kuliah" [ref=f1e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/krs
+      - link "Nilai Akademik" [ref=f1e14] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/nilai
+      - link "Kehadiran" [ref=f1e17] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/kehadiran
+      - link "Analisis Risiko" [ref=f1e21] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/analisis-risiko
+      - link "Rekomendasi" [ref=f1e25] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/rekomendasi
+      - link "Tindak Lanjut" [ref=f1e28] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/tindak-lanjut
+      - link "Profil Saya" [ref=f1e32] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/profil
+    - generic [ref=f1e36]:
+      - generic [ref=f1e37]:
+        - generic [aria-hidden] [ref=f1e38]: D
+        - generic [ref=f1e39]:
+          - strong [ref=f1e40]: Akun demo
+          - generic [ref=f1e41]: Mahasiswa
+      - button "Keluar" [ref=f1e43] [cursor=pointer]
+  - main [ref=f1e46]:
+    - generic [ref=f1e47]:
+      - generic [ref=f1e49]:
+        - text: Selamat siang,
+        - heading "KRS dan Mata Kuliah" [level=1] [ref=f1e50]
+        - paragraph [ref=f1e51]: Daftar mata kuliah yang tercatat pada KRS Anda.
+      - status [ref=f1e52]:
+        - strong [ref=f1e53]: Profil mahasiswa demo tidak ditampilkan sebagai data operasional
+        - generic [ref=f1e54]: Hubungi admin akademik setelah profil operasional yang sah ditautkan ke akun ini.
+      - status [ref=f1e55]:
+        - strong [ref=f1e56]: Data KRS belum tersedia
+        - generic [ref=f1e57]: KRS akan tampil setelah tercatat pada profil akademik Anda.
+      - paragraph [ref=f1e58]: Informasi akademik berasal dari catatan database profil Anda. Skor risiko mengikuti analisis yang tercatat dan bukan keputusan otomatis.

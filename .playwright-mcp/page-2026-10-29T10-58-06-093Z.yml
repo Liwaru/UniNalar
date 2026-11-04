@@ -1,0 +1,44 @@
+- generic [ref=f8e2]:
+  - complementary "Navigasi mahasiswa" [ref=f8e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f8e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f8e5]:
+        - strong [ref=f8e6]: UniNalar
+        - generic [ref=f8e7]: Ruang Mahasiswa
+    - navigation "Menu utama" [ref=f8e8]:
+      - paragraph [ref=f8e9]: Menu utama
+      - link "KRS & Mata Kuliah" [ref=f8e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/krs
+      - link "Nilai Akademik" [ref=f8e14] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/nilai
+      - link "Kehadiran" [ref=f8e17] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/kehadiran
+      - link "Analisis Risiko" [ref=f8e21] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/analisis-risiko
+      - link "Rekomendasi" [ref=f8e25] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/rekomendasi
+      - link "Tindak Lanjut" [ref=f8e28] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/tindak-lanjut
+      - link "Profil Saya" [ref=f8e32] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/profil
+    - generic [ref=f8e36]:
+      - generic [ref=f8e37]:
+        - generic [aria-hidden] [ref=f8e38]: M
+        - generic [ref=f8e39]:
+          - strong [ref=f8e40]: Akun mahasiswa
+          - generic [ref=f8e41]: Mahasiswa
+      - button "Keluar" [ref=f8e43] [cursor=pointer]
+  - main [ref=f8e46]:
+    - generic [ref=f8e47]:
+      - generic [ref=f8e49]:
+        - text: Selamat pagi,
+        - heading "Tindak Lanjut" [level=1] [ref=f8e50]
+        - paragraph [ref=f8e51]: Status tindak lanjut yang tercatat untuk rekomendasi Anda.
+      - status [ref=f8e52]:
+        - strong [ref=f8e53]: Profil mahasiswa demo tidak ditampilkan sebagai data operasional
+        - generic [ref=f8e54]: Hubungi admin akademik setelah profil operasional yang sah ditautkan ke akun ini.
+      - article [ref=f8e55]:
+        - status [ref=f8e56]:
+          - strong [ref=f8e57]: Tindak lanjut belum tersedia
+          - generic [ref=f8e58]: Tindak lanjut akan tampil setelah dicatat untuk rekomendasi operasional Anda.
+      - paragraph [ref=f8e59]: Informasi akademik berasal dari catatan database profil Anda. Skor risiko mengikuti analisis yang tercatat dan bukan keputusan otomatis.

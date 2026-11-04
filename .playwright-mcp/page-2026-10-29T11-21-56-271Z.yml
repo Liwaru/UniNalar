@@ -1,0 +1,43 @@
+- generic [ref=f7e2]:
+  - complementary "Navigasi Mahasiswa" [ref=f7e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f7e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f7e5]:
+        - strong [ref=f7e6]: UniNalar
+        - generic [ref=f7e7]: Ruang Mahasiswa
+    - navigation "Menu utama" [ref=f7e8]:
+      - paragraph [ref=f7e9]: Menu utama
+      - link "KRS & Mata Kuliah" [ref=f7e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/krs
+      - link "Nilai Akademik" [ref=f7e14] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/nilai
+      - link "Kehadiran" [ref=f7e17] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/kehadiran
+      - link "Analisis Risiko" [ref=f7e21] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/analisis-risiko
+      - link "Rekomendasi" [ref=f7e25] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/rekomendasi
+      - link "Tindak Lanjut" [ref=f7e28] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/tindak-lanjut
+      - link "Profil Saya" [ref=f7e32] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/profil
+    - generic [ref=f7e36]:
+      - generic [ref=f7e37]:
+        - generic [aria-hidden] [ref=f7e38]: D
+        - generic [ref=f7e39]:
+          - strong [ref=f7e40]: Akun demo
+          - generic [ref=f7e41]: Mahasiswa
+      - button "Keluar" [ref=f7e43] [cursor=pointer]
+  - main [ref=f7e46]:
+    - generic [ref=f7e47]:
+      - generic [ref=f7e49]:
+        - text: Selamat siang,
+        - heading "Analisis Risiko" [level=1] [ref=f7e50]
+        - paragraph [ref=f7e51]: Riwayat analisis dan faktor penjelas yang tersimpan.
+      - status [ref=f7e52]:
+        - strong [ref=f7e53]: Profil mahasiswa demo tidak ditampilkan sebagai data operasional
+        - generic [ref=f7e54]: Hubungi admin akademik setelah profil operasional yang sah ditautkan ke akun ini.
+      - status [ref=f7e55]:
+        - strong [ref=f7e56]: Analisis risiko belum tersedia
+        - generic [ref=f7e57]: Dashboard hanya menampilkan analisis yang sudah tersimpan. Skor tidak dihitung otomatis.
+      - paragraph [ref=f7e58]: Informasi akademik berasal dari catatan database profil Anda. Skor risiko mengikuti analisis yang tercatat dan bukan keputusan otomatis.

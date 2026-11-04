@@ -1,0 +1,311 @@
+- generic [active] [ref=f30e1]:
+  - link "Lewati ke konten" [ref=f30e2] [cursor=pointer]:
+    - /url: "#konten"
+  - banner [ref=f30e3]:
+    - navigation "Navigasi utama" [ref=f30e4]:
+      - generic [ref=f30e5]:
+        - link "UniNalar, Beranda" [ref=f30e6] [cursor=pointer]:
+          - /url: "#beranda"
+          - img "UniNalar" [ref=f30e7]
+        - generic [ref=f30e8]:
+          - list [ref=f30e9]:
+            - listitem [ref=f30e10]:
+              - link "Beranda" [ref=f30e11] [cursor=pointer]:
+                - /url: "#beranda"
+            - listitem [ref=f30e12]:
+              - link "Fitur" [ref=f30e13] [cursor=pointer]:
+                - /url: "#fitur"
+            - listitem [ref=f30e14]:
+              - link "Cara Kerja" [ref=f30e15] [cursor=pointer]:
+                - /url: "#cara-kerja"
+            - listitem [ref=f30e16]:
+              - link "Tentang" [ref=f30e17] [cursor=pointer]:
+                - /url: "#tentang"
+          - link "Masuk" [ref=f30e18] [cursor=pointer]:
+            - /url: http://localhost:8080/login
+  - main [ref=f30e19]:
+    - region [ref=f30e20]:
+      - generic [ref=f30e22]:
+        - generic [ref=f30e23]:
+          - generic [ref=f30e24]: Sistem Informasi Akademik · Explainable AI
+          - heading "Kenali Risiko Lebih Dini. Bantu Mahasiswa Melangkah Lebih Jauh." [level=1] [ref=f30e26]
+          - paragraph [ref=f30e27]: Pahami kondisi akademik mahasiswa melalui analisis data yang transparan, penjelasan berbasis AI, dan rekomendasi intervensi yang terarah.
+          - generic [ref=f30e28]:
+            - link "Masuk ke UniNalar" [ref=f30e29] [cursor=pointer]:
+              - /url: http://localhost:8080/login
+            - link "Jelajahi fitur" [ref=f30e30] [cursor=pointer]:
+              - /url: "#fitur"
+          - generic [ref=f30e31]:
+            - generic [aria-hidden] [ref=f30e32]: ✓
+            - text: Analisis yang dapat dipahami, untuk pendampingan yang lebih tepat.
+        - generic "Ilustrasi dashboard akademik dan analisis AI simulasi" [ref=f30e34]:
+          - generic [ref=f30e37]:
+            - generic [ref=f30e38]:
+              - generic [ref=f30e39]:
+                - text: RINGKASAN AKADEMIK
+                - strong [ref=f30e40]: Ikhtisar mahasiswa
+              - generic "Visual simulasi" [ref=f30e41]
+            - generic [ref=f30e42]:
+              - generic [ref=f30e43]:
+                - generic [ref=f30e44]: Risiko terpantau
+                - strong [ref=f30e45]: 18.4%
+                - emphasis [ref=f30e46]: simulasi
+              - generic [ref=f30e47]:
+                - generic [ref=f30e48]: Intervensi aktif
+                - strong [ref=f30e49]: "32"
+                - emphasis [ref=f30e50]: simulasi
+            - generic [ref=f30e51]:
+              - generic [ref=f30e52]: Tren risiko akademik
+              - generic [ref=f30e53]: Data ilustrasi
+            - img "Grafik garis ilustratif tren risiko akademik" [ref=f30e54]
+            - generic [ref=f30e58]:
+              - generic [ref=f30e59]: Jan
+              - generic [ref=f30e60]: Feb
+              - generic [ref=f30e61]: Mar
+              - generic [ref=f30e62]: Apr
+              - generic [ref=f30e63]: Mei
+              - generic [ref=f30e64]: Jun
+          - generic [ref=f30e65]:
+            - generic [ref=f30e67]: ✦
+            - generic [ref=f30e68]:
+              - text: INSIGHT AI · SIMULASI
+              - paragraph [ref=f30e69]: Kehadiran dan tren nilai menjadi faktor yang perlu diperhatikan.
+            - generic [aria-hidden] [ref=f30e70]: ↗
+          - generic [ref=f30e71]: Data → Insight → Aksi
+          - generic [aria-hidden] [ref=f30e73]: ✳
+          - generic [aria-hidden] [ref=f30e74]: +
+    - region [ref=f30e75]:
+      - generic [ref=f30e76]:
+        - generic [ref=f30e77]:
+          - generic [ref=f30e78]: PENDAMPINGAN YANG LEBIH TERARAH
+          - heading "Data akademik menjadi langkah nyata" [level=2] [ref=f30e79]
+          - paragraph [ref=f30e80]: Satukan pemahaman, penjelasan, dan tindak lanjut dalam satu alur yang mudah digunakan.
+        - generic [ref=f30e81]:
+          - article [ref=f30e83]:
+            - heading "Analisis risiko akademik" [level=3] [ref=f30e87]
+            - paragraph [ref=f30e88]: Kenali perubahan kondisi lebih awal melalui skor yang dihitung dari aturan dan indikator terukur.
+            - link "Lihat preview analisis risiko" [ref=f30e89] [cursor=pointer]:
+              - /url: "#dashboard"
+              - text: Lihat preview →
+          - article [ref=f30e91]:
+            - heading "Faktor yang transparan" [level=3] [ref=f30e95]
+            - paragraph [ref=f30e96]: Pahami indikator yang berkontribusi pada hasil agar setiap penilaian dapat ditinjau kembali.
+            - link "Pelajari transparansi" [ref=f30e97] [cursor=pointer]:
+              - /url: "#transparansi"
+              - text: Pelajari transparansi →
+          - article [ref=f30e99]:
+            - heading "Rekomendasi intervensi" [level=3] [ref=f30e103]
+            - paragraph [ref=f30e104]: Ubah temuan menjadi opsi pendampingan yang relevan dan dapat dipilih oleh tim akademik.
+            - link "Lihat alur kerja" [ref=f30e105] [cursor=pointer]:
+              - /url: "#cara-kerja"
+              - text: Lihat alur kerja →
+          - article [ref=f30e107]:
+            - heading "Pemantauan tindak lanjut" [level=3] [ref=f30e111]
+            - paragraph [ref=f30e112]: Catat progres intervensi dan jaga kesinambungan dukungan bagi setiap mahasiswa.
+            - link "Mulai mengenal UniNalar" [ref=f30e113] [cursor=pointer]:
+              - /url: "#cta"
+              - text: Mulai mengenal UniNalar →
+    - generic [ref=f30e115]:
+      - generic [ref=f30e116]:
+        - generic [ref=f30e117]:
+          - generic [ref=f30e118]: GAMBARAN YANG MUDAH DIBACA
+          - heading "Ringkasan akademik, tanpa kehilangan konteks." [level=2] [ref=f30e119]
+        - paragraph [ref=f30e121]: Contoh tampilan untuk membantu tim melihat pola, bukan menggantikan penilaian pendamping.
+      - generic [ref=f30e122]:
+        - generic [ref=f30e123]:
+          - strong [ref=f30e125]: UniNalar / Ikhtisar
+          - generic [ref=f30e126]:
+            - generic [ref=f30e127]: Data simulasi
+            - generic "Pengguna demo" [ref=f30e129]: U
+        - generic [ref=f30e130]:
+          - complementary "Navigasi contoh dashboard" [ref=f30e131]:
+            - generic [ref=f30e132]: Ringkasan
+            - generic [ref=f30e134]: Mahasiswa
+            - generic [ref=f30e136]: Analisis risiko
+            - generic [ref=f30e138]: Intervensi
+          - generic [ref=f30e140]:
+            - generic [ref=f30e141]:
+              - generic [ref=f30e142]:
+                - text: DASHBOARD AKADEMIK
+                - heading "Selamat pagi, Tim Akademik" [level=3] [ref=f30e143]
+                - paragraph [ref=f30e144]: Berikut ringkasan aktivitas pendampingan.
+              - button "Filter semester simulasi" [ref=f30e145] [cursor=pointer]: Semester berjalan
+            - generic [ref=f30e146]:
+              - generic [ref=f30e148]:
+                - generic [ref=f30e149]: Total mahasiswa
+                - strong [ref=f30e150]: "1.248"
+                - generic [ref=f30e151]: +4,8% dari periode lalu
+                - generic [ref=f30e152]: ◎
+              - generic [ref=f30e154]:
+                - generic [ref=f30e155]: Perlu perhatian
+                - strong [ref=f30e156]: "186"
+                - generic [ref=f30e157]: 14,9% dari total
+                - generic [ref=f30e158]: "!"
+              - generic [ref=f30e160]:
+                - generic [ref=f30e161]: Intervensi aktif
+                - strong [ref=f30e162]: "74"
+                - generic [ref=f30e163]: Dalam pemantauan
+                - generic [ref=f30e164]: ↗
+              - generic [ref=f30e166]:
+                - generic [ref=f30e167]: Tindak lanjut selesai
+                - strong [ref=f30e168]: 62%
+                - generic [ref=f30e169]: +8,2% bulan ini
+                - generic [ref=f30e170]: ✓
+            - generic [ref=f30e171]:
+              - generic [ref=f30e173]:
+                - generic [ref=f30e174]:
+                  - generic [ref=f30e175]:
+                    - heading "Tren risiko akademik" [level=4] [ref=f30e176]
+                    - paragraph [ref=f30e177]: Perbandingan kategori risiko · ilustrasi
+                  - generic [ref=f30e178]: Perlu perhatian Stabil
+                - img "Grafik simulasi tren risiko akademik" [ref=f30e182]
+              - generic [ref=f30e184]:
+                - generic [ref=f30e185]:
+                  - generic [ref=f30e186]:
+                    - heading "Distribusi risiko" [level=4] [ref=f30e187]
+                    - paragraph [ref=f30e188]: Proporsi mahasiswa · ilustrasi
+                  - generic [aria-hidden] [ref=f30e189]: ···
+                - generic [ref=f30e190]:
+                  - img "Grafik simulasi distribusi kategori risiko" [ref=f30e191]
+                  - generic:
+                    - strong: "1.248"
+                    - generic: simulasi
+                - generic [ref=f30e192]:
+                  - generic [ref=f30e193]:
+                    - text: Stabil
+                    - generic [ref=f30e195]: 64%
+                  - generic [ref=f30e196]:
+                    - text: Pantau
+                    - generic [ref=f30e198]: 25%
+                  - generic [ref=f30e199]:
+                    - text: Prioritas
+                    - generic [ref=f30e201]: 11%
+            - paragraph [ref=f30e202]: ⓘ Seluruh angka, kategori, grafik, dan nama pada preview ini adalah data simulasi.
+    - region [ref=f30e203]:
+      - generic [ref=f30e204]:
+        - generic [ref=f30e205]:
+          - generic [ref=f30e206]: DARI DATA MENUJU DUKUNGAN
+          - heading "Empat tahap, satu tujuan." [level=2] [ref=f30e207]
+          - paragraph [ref=f30e208]: Teknologi membantu menyusun prioritas agar pendampingan akademik lebih terarah.
+        - generic [ref=f30e209]:
+          - article [ref=f30e211]:
+            - generic [ref=f30e212]: "01"
+            - heading "Data akademik" [level=3] [ref=f30e216]
+            - paragraph [ref=f30e217]: Informasi akademik yang relevan menjadi titik awal analisis.
+          - article [ref=f30e219]:
+            - generic [ref=f30e220]: "02"
+            - heading "Hitung risiko" [level=3] [ref=f30e224]
+            - paragraph [ref=f30e225]: Aturan dan indikator terukur menghasilkan skor yang dapat ditinjau.
+          - article [ref=f30e227]:
+            - generic [ref=f30e228]: "03"
+            - heading "Jelaskan & rekomendasikan" [level=3] [ref=f30e232]
+            - paragraph [ref=f30e233]: XAI menerangkan faktor, AI membantu menyusun opsi tindak lanjut.
+          - article [ref=f30e235]:
+            - generic [ref=f30e236]: "04"
+            - heading "Pantau tindak lanjut" [level=3] [ref=f30e240]
+            - paragraph [ref=f30e241]: Tim akademik menentukan dukungan dan memantau progresnya.
+    - generic [ref=f30e244]:
+      - generic [ref=f30e245]:
+        - generic [ref=f30e246]: EXPLAINABLE AI · XAI
+        - heading "Setiap sinyal punya alasan yang bisa ditelusuri." [level=2] [ref=f30e247]
+        - paragraph [ref=f30e248]: Skor risiko dihitung dari aturan yang transparan. AI membantu menjelaskan hasil dan menyusun rekomendasi—bukan menjadi satu-satunya penentu keputusan.
+        - generic [ref=f30e249]:
+          - generic [ref=f30e250]:
+            - generic [ref=f30e251]: ✓
+            - paragraph [ref=f30e252]:
+              - strong [ref=f30e253]: Faktor terlihat jelas
+              - text: Indikator yang berkontribusi dapat diperiksa oleh pendamping.
+          - generic [ref=f30e254]:
+            - generic [ref=f30e255]: ✓
+            - paragraph [ref=f30e256]:
+              - strong [ref=f30e257]: Rekomendasi tetap ditinjau manusia
+              - text: Keputusan intervensi berada pada tim akademik.
+        - link "Kenali UniNalar lebih dekat" [ref=f30e258] [cursor=pointer]:
+          - /url: http://localhost:8080/login
+          - text: Kenali UniNalar lebih dekat →
+      - generic [ref=f30e260]:
+        - generic [ref=f30e261]:
+          - generic [ref=f30e262]:
+            - text: CONTOH PENJELASAN
+            - heading "Faktor yang perlu diperhatikan" [level=3] [ref=f30e263]
+          - generic [ref=f30e264]: Ilustrasi
+        - generic [ref=f30e266]:
+          - generic [ref=f30e267]:
+            - generic [ref=f30e268]: Skor risiko
+            - strong [ref=f30e269]: 68/100
+            - generic [ref=f30e270]: Nilai contoh, bukan prediksi aktual
+          - generic [ref=f30e271]: Perlu perhatian
+        - generic [ref=f30e273]:
+          - generic [ref=f30e275]:
+            - generic [ref=f30e276]: Kehadiran kuliah
+            - generic [ref=f30e277]: Kontribusi ilustratif 35%
+          - generic [ref=f30e281]:
+            - generic [ref=f30e282]: Tren nilai
+            - generic [ref=f30e283]: Kontribusi ilustratif 30%
+          - generic [ref=f30e287]:
+            - generic [ref=f30e288]: Ketuntasan studi
+            - generic [ref=f30e289]: Kontribusi ilustratif 20%
+        - generic [ref=f30e292]:
+          - generic [aria-hidden] [ref=f30e293]: ✦
+          - paragraph [ref=f30e294]:
+            - strong [ref=f30e295]: Opsi tindak lanjut
+            - text: Jadwalkan percakapan akademik untuk memahami hambatan kehadiran.
+        - paragraph [ref=f30e296]: Faktor dan bobot di atas hanya ilustrasi. Aturan sebenarnya ditetapkan institusi.
+    - region [ref=f30e297]:
+      - generic [ref=f30e299]:
+        - generic [ref=f30e300]:
+          - generic [ref=f30e301]: TENTANG UNINALAR
+          - heading "Memahami Risiko Akademik, Menentukan Langkah yang Lebih Tepat." [level=2] [ref=f30e302]
+          - paragraph [ref=f30e303]: UniNalar adalah sistem informasi akademik yang membantu tim akademik memahami risiko mahasiswa melalui data yang terukur, analisis yang transparan, dan rekomendasi intervensi yang dapat ditinjau.
+        - generic [ref=f30e305]:
+          - generic [ref=f30e306]: PRINSIP UNINALAR
+          - article [ref=f30e307]:
+            - generic [ref=f30e308]: "01"
+            - generic [ref=f30e309]:
+              - heading "Berbasis Data" [level=3] [ref=f30e310]
+              - paragraph [ref=f30e311]: Menggunakan informasi akademik seperti kehadiran dan tren nilai sebagai dasar analisis.
+          - article [ref=f30e312]:
+            - generic [ref=f30e313]: "02"
+            - generic [ref=f30e314]:
+              - heading "Transparan dan Dapat Dijelaskan" [level=3] [ref=f30e315]
+              - paragraph [ref=f30e316]: Membantu pengguna memahami faktor yang berkontribusi terhadap risiko mahasiswa.
+          - article [ref=f30e317]:
+            - generic [ref=f30e318]: "03"
+            - generic [ref=f30e319]:
+              - heading "Mendukung Pendampingan" [level=3] [ref=f30e320]
+              - paragraph [ref=f30e321]: Menyediakan rekomendasi intervensi sebagai bahan pertimbangan tim akademik, bukan pengganti keputusan manusia.
+    - generic [ref=f30e324]:
+      - generic [ref=f30e326]:
+        - text: MULAI DENGAN PEMAHAMAN
+        - heading "Dukungan yang tepat dimulai dari melihat lebih awal." [level=2] [ref=f30e327]
+        - paragraph [ref=f30e328]: Kenali cara UniNalar membantu tim akademik memahami sinyal dan menindaklanjutinya.
+        - link "Masuk ke UniNalar" [ref=f30e329] [cursor=pointer]:
+          - /url: http://localhost:8080/login
+      - generic [ref=f30e331]: U
+  - contentinfo [ref=f30e334]:
+    - generic [ref=f30e335]:
+      - generic [ref=f30e336]:
+        - generic [ref=f30e337]:
+          - link [ref=f30e338] [cursor=pointer]:
+            - /url: "#beranda"
+            - img "UniNalar" [ref=f30e339]
+          - paragraph [ref=f30e340]: Sistem Informasi Akademik dengan analisis risiko yang transparan dan dukungan yang lebih terarah.
+        - generic [ref=f30e341]:
+          - strong [ref=f30e342]: Navigasi
+          - link "Fitur" [ref=f30e343] [cursor=pointer]:
+            - /url: "#fitur"
+          - link "Cara Kerja" [ref=f30e344] [cursor=pointer]:
+            - /url: "#cara-kerja"
+          - link "Tentang" [ref=f30e345] [cursor=pointer]:
+            - /url: "#tentang"
+        - generic [ref=f30e346]:
+          - strong [ref=f30e347]: Akses
+          - link "Masuk" [ref=f30e348] [cursor=pointer]:
+            - /url: http://localhost:8080/login
+          - link "Preview dashboard" [ref=f30e349] [cursor=pointer]:
+            - /url: "#dashboard"
+        - generic [ref=f30e350]:
+          - generic [aria-hidden] [ref=f30e351]: ⌑
+          - strong [ref=f30e352]: Privasi dan kepercayaan
+          - paragraph [ref=f30e353]: Preview publik hanya menggunakan data simulasi. Data mahasiswa pribadi tidak ditampilkan di halaman ini.
+      - generic [ref=f30e354]: © 2026 UniNalar. Dibuat untuk pendampingan akademik yang lebih baik.

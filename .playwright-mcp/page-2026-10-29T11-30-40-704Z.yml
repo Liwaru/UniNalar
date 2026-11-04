@@ -1,0 +1,88 @@
+- generic [ref=f26e2]:
+  - complementary "Navigasi Mahasiswa" [ref=f26e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f26e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f26e5]:
+        - strong [ref=f26e6]: UniNalar
+        - generic [ref=f26e7]: Ruang Mahasiswa
+    - navigation "Menu utama" [ref=f26e8]:
+      - paragraph [ref=f26e9]: Menu utama
+      - link "KRS & Mata Kuliah" [ref=f26e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/krs
+      - link "Nilai Akademik" [ref=f26e14] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/nilai
+      - link "Kehadiran" [ref=f26e17] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/kehadiran
+      - link "Analisis Risiko" [ref=f26e21] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/analisis-risiko
+      - link "Rekomendasi" [ref=f26e25] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/rekomendasi
+      - link "Tindak Lanjut" [ref=f26e28] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/tindak-lanjut
+      - link "Profil Saya" [ref=f26e32] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/mahasiswa/profil
+    - generic [ref=f26e36]:
+      - generic [ref=f26e37]:
+        - generic [aria-hidden] [ref=f26e38]: D
+        - generic [ref=f26e39]:
+          - strong [ref=f26e40]: Akun demo
+          - generic [ref=f26e41]: Mahasiswa
+      - button "Keluar" [ref=f26e43] [cursor=pointer]
+  - main [ref=f26e46]:
+    - generic [ref=f26e47]:
+      - generic [ref=f26e49]:
+        - text: Selamat siang,
+        - heading "Dashboard Mahasiswa" [level=1] [ref=f26e50]
+        - paragraph [ref=f26e51]: Akun demo · ringkasan data operasional tidak tersedia
+      - status [ref=f26e52]:
+        - strong [ref=f26e53]: Profil mahasiswa demo tidak ditampilkan sebagai data operasional
+        - generic [ref=f26e54]: Hubungi admin akademik setelah profil operasional yang sah ditautkan ke akun ini.
+      - region [ref=f26e55]:
+        - generic [ref=f26e57]:
+          - heading "Ringkasan akademik" [level=2] [ref=f26e58]
+          - paragraph [ref=f26e59]: Ringkasan dari catatan database yang tertaut ke profil Anda.
+        - generic [ref=f26e60]:
+          - article [ref=f26e61]:
+            - generic [ref=f26e62]: Rata-rata nilai
+            - generic [ref=f26e67]: Belum tersedia
+            - generic [ref=f26e68]: Data nilai angka belum tersedia.
+            - link "Lihat nilai" [ref=f26e69] [cursor=pointer]:
+              - /url: http://localhost:8080/dashboard/mahasiswa/nilai
+          - article [ref=f26e70]:
+            - generic [ref=f26e71]: Kehadiran
+            - generic [ref=f26e77]: Belum tersedia
+            - generic [ref=f26e78]: Data kehadiran belum tersedia.
+            - link "Lihat kehadiran" [ref=f26e79] [cursor=pointer]:
+              - /url: http://localhost:8080/dashboard/mahasiswa/kehadiran
+          - article [ref=f26e80]:
+            - generic [ref=f26e81]: Mata kuliah aktif
+            - generic [ref=f26e87]: Belum tersedia
+            - generic [ref=f26e88]: Tidak ada mata kuliah aktif tercatat.
+            - link "Lihat KRS" [ref=f26e89] [cursor=pointer]:
+              - /url: http://localhost:8080/dashboard/mahasiswa/krs
+          - article [ref=f26e90]:
+            - generic [ref=f26e91]: Status risiko
+            - generic [ref=f26e97]: Belum tersedia
+            - generic [ref=f26e98]: Belum ada analisis risiko tercatat.
+            - link "Lihat analisis" [ref=f26e99] [cursor=pointer]:
+              - /url: http://localhost:8080/dashboard/mahasiswa/analisis-risiko
+      - region [ref=f26e100]:
+        - generic [ref=f26e102]:
+          - heading "Perkembangan akademik" [level=2] [ref=f26e103]
+          - paragraph [ref=f26e104]: Rata-rata nilai dan kehadiran per semester dari data Anda.
+        - article [ref=f26e105]:
+          - generic [ref=f26e106]:
+            - strong [ref=f26e107]: Riwayat belum mencukupi
+            - generic [ref=f26e108]: Grafik hanya tersedia setelah data tercatat setidaknya pada dua semester.
+      - region "Tautan fitur akademik" [ref=f26e109]:
+        - article [ref=f26e110]:
+          - heading "Rekomendasi intervensi" [level=3] [ref=f26e111]
+          - paragraph [ref=f26e112]: Buka daftar rekomendasi yang terkait dengan analisis Anda.
+          - link "Buka rekomendasi" [ref=f26e113] [cursor=pointer]:
+            - /url: http://localhost:8080/dashboard/mahasiswa/rekomendasi
+        - article [ref=f26e114]:
+          - heading "Tindak lanjut" [level=3] [ref=f26e115]
+          - paragraph [ref=f26e116]: Lihat status tindak lanjut yang tercatat.
+          - link "Buka tindak lanjut" [ref=f26e117] [cursor=pointer]:
+            - /url: http://localhost:8080/dashboard/mahasiswa/tindak-lanjut
+      - paragraph [ref=f26e118]: Informasi akademik berasal dari catatan database profil Anda. Skor risiko mengikuti analisis yang tercatat dan bukan keputusan otomatis.

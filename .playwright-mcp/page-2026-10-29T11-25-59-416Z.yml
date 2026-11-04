@@ -1,0 +1,60 @@
+- generic [ref=f18e2]:
+  - complementary "Navigasi Admin Akademik" [ref=f18e3]:
+    - link "UniNalar, Dashboard sesuai role" [ref=f18e4] [cursor=pointer]:
+      - /url: http://localhost:8080/dashboard
+      - generic [ref=f18e5]:
+        - strong [ref=f18e6]: UniNalar
+        - generic [ref=f18e7]: Ruang Admin Akademik
+    - navigation "Menu utama" [ref=f18e8]:
+      - paragraph [ref=f18e9]: Menu utama
+      - link "Dashboard" [ref=f18e10] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik
+      - link "Program Studi" [ref=f18e16] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/program-studi
+      - link "Semester" [ref=f18e19] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/semester
+      - link "Mata Kuliah" [ref=f18e23] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mata-kuliah
+      - link "Dosen" [ref=f18e27] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/dosen
+      - link "Mahasiswa" [ref=f18e31] [cursor=pointer]:
+        - /url: http://localhost:8080/dashboard/admin-akademik/mahasiswa
+    - generic [ref=f18e35]:
+      - generic [ref=f18e36]:
+        - generic [aria-hidden] [ref=f18e37]: D
+        - generic [ref=f18e38]:
+          - strong [ref=f18e39]: Akun demo
+          - generic [ref=f18e40]: Admin Akademik
+      - button "Keluar" [ref=f18e42] [cursor=pointer]
+  - main [ref=f18e45]:
+    - generic [ref=f18e46]:
+      - generic [ref=f18e48]:
+        - text: Admin Akademik
+        - heading "Mata Kuliah" [level=1] [ref=f18e49]
+      - status [ref=f18e50]:
+        - strong [ref=f18e51]: Akun demo.
+        - text: Identitas dan data yang terkait akun ini bukan data operasional.
+      - generic [ref=f18e52]:
+        - generic [ref=f18e53]:
+          - paragraph [ref=f18e55]: Kelola mata kuliah operasional. Data demo tidak ditampilkan dalam daftar ini.
+          - link "Tambah Mata kuliah" [ref=f18e56] [cursor=pointer]:
+            - /url: http://localhost:8080/dashboard/admin-akademik/mata-kuliah/create
+        - generic [ref=f18e57]:
+          - generic [ref=f18e58]: Cari data
+          - searchbox "Cari data" [ref=f18e59]
+          - button "Cari" [ref=f18e60] [cursor=pointer]
+        - table [ref=f18e62]:
+          - rowgroup [ref=f18e63]:
+            - row [ref=f18e64]:
+              - columnheader "Kode" [ref=f18e65]
+              - columnheader "Nama" [ref=f18e66]
+              - columnheader "Program studi" [ref=f18e67]
+              - columnheader "SKS" [ref=f18e68]
+              - columnheader "Semester rekomendasi" [ref=f18e69]
+              - columnheader "Aksi" [ref=f18e70]
+          - rowgroup [ref=f18e71]:
+            - row [ref=f18e72]:
+              - cell "Data operasional belum tersedia. Tambahkan data dari sumber resmi atau sesuaikan pencarian." [ref=f18e73]:
+                - generic [ref=f18e74]:
+                  - strong [ref=f18e75]: Data operasional belum tersedia.
+                  - generic [ref=f18e76]: Tambahkan data dari sumber resmi atau sesuaikan pencarian.

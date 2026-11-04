@@ -1,0 +1,39 @@
+- main [ref=f21e2]:
+  - region [ref=f21e3]:
+    - link "UniNalar" [ref=f21e4] [cursor=pointer]:
+      - /url: http://localhost:8080/login
+      - img "UniNalar" [ref=f21e5]
+    - generic [ref=f21e6]:
+      - generic [ref=f21e7]: MODERN ACADEMIC INTELLIGENCE
+      - heading "Pahami Risiko Lebih Dini. Dukung Langkah yang Tepat." [level=1] [ref=f21e9]
+      - paragraph [ref=f21e10]: Analisis akademik yang transparan untuk pendampingan mahasiswa yang lebih terarah.
+    - generic [aria-hidden] [ref=f21e11]:
+      - generic [ref=f21e17]: U
+      - generic [ref=f21e20]:
+        - generic [ref=f21e21]: DATA
+        - generic [ref=f21e23]: INSIGHT
+        - generic [ref=f21e25]: PENDAMPINGAN
+    - paragraph [ref=f21e26]: Informasi akademik, dipahami dengan lebih baik.
+  - region [ref=f21e27]:
+    - generic [ref=f21e28]:
+      - generic [ref=f21e29]: SELAMAT DATANG KEMBALI
+      - heading "Masuk ke UniNalar" [level=2] [ref=f21e30]
+      - paragraph [ref=f21e31]: Gunakan akun yang telah diberikan kepada kamu.
+      - generic [ref=f21e32]:
+        - generic [ref=f21e33]:
+          - generic [ref=f21e34]: Username
+          - textbox "Username" [active] [ref=f21e35]:
+            - /placeholder: Masukkan username
+        - generic [ref=f21e36]:
+          - generic [ref=f21e37]: Password
+          - generic [ref=f21e38]:
+            - textbox "Password" [ref=f21e39]:
+              - /placeholder: Masukkan password
+            - button "Tampilkan password" [ref=f21e40] [cursor=pointer]
+        - generic [ref=f21e44]:
+          - generic [ref=f21e45] [cursor=pointer]:
+            - checkbox "Ingat saya" [ref=f21e46]
+            - generic [ref=f21e48]: Ingat saya
+          - button "Lupa password?" [ref=f21e49] [cursor=pointer]
+        - button "Masuk" [ref=f21e50] [cursor=pointer]
+      - paragraph [ref=f21e52]: Akun dikelola oleh pihak akademik UniNalar.
