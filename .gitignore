@@ -4,6 +4,9 @@
 .env.backup
 .env.production
 .env.docker
+.env.*
+!.env.example
+!.env.*.example
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -20,6 +23,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+# Local QA evidence and source/vendor snapshots are backed up separately.
+/qa-artifacts/
+/.playwright-mcp/
 Homestead.json
 Homestead.yaml
 Thumbs.db
