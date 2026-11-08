@@ -1,0 +1,13 @@
+@extends('layouts.role-dashboard')
+@section('title', $pageTitle)
+@section('page-title', $pageTitle)
+@section('page-subtitle', 'Pemantauan akademik berdasarkan catatan operasional.')
+@section('content')
+    @include('dashboard.owner.partials.filters')
+    @if (!$available)
+        <div class="admin-alert" role="status"><strong>Data belum tersedia.</strong> Tabel yang diperlukan untuk halaman ini belum lengkap.</div>
+    @else
+        @yield('monitoring')
+    @endif
+    <p class="admin-help">Halaman monitoring hanya untuk membaca data. Perubahan akademik dilakukan melalui peran yang berwenang.</p>
+@endsection

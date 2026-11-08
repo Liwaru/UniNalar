@@ -12,7 +12,7 @@
     @if ((int) auth()->user()->level === \App\Models\User::ROLE_MAHASISWA)
         @vite(['resources/js/student-dashboard.js'])
     @endif
-    @if ((int) auth()->user()->level === \App\Models\User::ROLE_ADMIN_AKADEMIK)
+    @if ((int) auth()->user()->level === \App\Models\User::ROLE_ADMIN_AKADEMIK || (int) auth()->user()->level === \App\Models\User::ROLE_KAPRODI)
         @vite(['resources/css/admin-academic.css'])
     @endif
 </head>
@@ -29,13 +29,20 @@
         $isDemoAccount = $isStudent
             ? ((bool) ($isDemoProfile ?? false) || str_ends_with(strtolower((string) auth()->user()->email), '@demo.uninlar.test'))
             : (bool) ($isDemoAccount ?? str_ends_with(strtolower((string) auth()->user()->email), '@demo.uninlar.test'));
-        $hour = now()->hour;
+        $hour = now('Asia/Jakarta')->hour;
         $greeting = $hour < 11 ? 'Selamat pagi' : ($hour < 15 ? 'Selamat siang' : ($hour < 19 ? 'Selamat sore' : 'Selamat malam'));
     @endphp
+    <a class="student-skip-link" href="#student-main">Lewati navigasi</a>
     <div class="student-layout" data-role="{{ $roleSlug }}">
         <x-dashboard.sidebar :role-slug="$roleSlug" :role-label="$roleLabel" :items="$navigation" :user-label="$sidebarUserLabel" :is-demo="$isDemoAccount" />
-        <main class="student-content">
+        <main class="student-content" id="student-main" tabindex="-1">
             <div class="student-main">
+                @if ($isStudent)
+                    <nav class="student-breadcrumb" aria-label="Breadcrumb">
+                        <a href="{{ route('dashboard.mahasiswa') }}">Ringkasan akademik</a>
+                        @unless (request()->routeIs('dashboard.mahasiswa'))<span aria-hidden="true">/</span><span>@yield('page-title')</span>@endunless
+                    </nav>
+                @endif
                 <header class="student-topline">
                     <div class="student-greeting">
                         <small>{{ $isStudent ? $greeting.',' : $roleLabel }}</small>
@@ -59,6 +66,21 @@
                 @endif
                 @if ($isStudent && !($skemaAkademikTersedia ?? false))
                     <div class="empty-state mb-4" role="status"><strong>Skema akademik belum lengkap</strong><span>Halaman ini hanya menampilkan data dari tabel operasional yang tersedia.</span></div>
+                @endif
+                @if ($level === \App\Models\User::ROLE_DOSEN)
+                    <nav class="student-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('dashboard.dosen') }}">Dashboard Dosen</a>@unless (request()->routeIs('dashboard.dosen'))<span aria-hidden="true">/</span><span>@yield('page-title')</span>@endunless</nav>
+                    @if (session('status'))<div class="student-card mb-3" role="status">{{ session('status') }}</div>@endif
+                    @if ($errors->any())<div class="student-card mb-3" role="alert">@foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
+                @endif
+                @if ($level === \App\Models\User::ROLE_ADMIN_AKADEMIK)
+                    <nav class="student-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('dashboard.admin-akademik') }}">Administrasi Akademik</a>@unless (request()->routeIs('dashboard.admin-akademik'))<span aria-hidden="true">/</span><span>@yield('page-title')</span>@endunless</nav>
+                    @if (session('status'))<div class="admin-alert success" role="status">{{ session('status') }}</div>@endif
+                    @if (session('error'))<div class="admin-alert error" role="alert">{{ session('error') }}</div>@endif
+                    @if ($errors->any())<div class="admin-alert error" role="alert"><strong>Periksa kembali isian Anda.</strong><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+                @endif
+                @if ($level === \App\Models\User::ROLE_KAPRODI)
+                    <nav class="student-breadcrumb" aria-label="Breadcrumb"><a href="{{ route('dashboard.owner') }}">Monitoring Akademik</a>@unless(request()->routeIs('dashboard.owner'))<span aria-hidden="true">/</span><span>@yield('page-title')</span>@endunless</nav>
+                    @if ($errors->any())<div class="admin-alert error" role="alert"><strong>Periksa pilihan filter.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
                 @endif
                 @yield('content')
                 @if ($isStudent)

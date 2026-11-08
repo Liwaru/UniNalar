@@ -19,9 +19,9 @@
             </a>
 
             <div class="brand-copy">
-                <span class="brand-eyebrow"><i></i> MODERN ACADEMIC INTELLIGENCE</span>
-                <h1 id="brand-heading">Pahami Risiko Lebih Dini. <span>Dukung Langkah yang Tepat.</span></h1>
-                <p>Analisis akademik yang transparan untuk pendampingan mahasiswa yang lebih terarah.</p>
+                <span class="brand-eyebrow"><i></i> LAYANAN AKADEMIK UNINALAR</span>
+                <h1 id="brand-heading">Informasi akademik. <span>Terhubung dalam satu layanan.</span></h1>
+                <p>Akses KRS, nilai, dan catatan pendampingan sesuai peran Anda.</p>
             </div>
 
             <div class="academic-visual" aria-hidden="true">
@@ -41,7 +41,7 @@
             <div class="login-form-wrap">
                 <span class="form-kicker">SELAMAT DATANG KEMBALI</span>
                 <h2 id="login-heading">Masuk ke UniNalar</h2>
-                <p class="form-description">Gunakan akun yang telah diberikan kepada kamu.</p>
+                <p class="form-description">Gunakan akun akademik yang diberikan kepada Anda.</p>
 
                 @if ($errors->any())
                     <div class="form-alert" id="login-error" role="alert" aria-live="polite">

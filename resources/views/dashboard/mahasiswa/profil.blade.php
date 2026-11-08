@@ -21,12 +21,12 @@
                 @if (session('status'))<p class="form-success" role="status">{{ session('status') }}</p>@endif
                 <div class="form-group">
                     <label for="email">Email profil</label>
-                    <input id="email" name="email" type="email" value="{{ old('email', $mahasiswa->email) }}" maxlength="255" autocomplete="email" aria-describedby="email-error">
+                    <input id="email" name="email" type="email" value="{{ old('email', $mahasiswa->email) }}" maxlength="255" autocomplete="email" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
                     @error('email')<span id="email-error" class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="form-group">
                     <label for="no_telepon">Nomor telepon</label>
-                    <input id="no_telepon" name="no_telepon" type="tel" value="{{ old('no_telepon', $mahasiswa->no_telepon) }}" maxlength="30" autocomplete="tel" aria-describedby="phone-error">
+                    <input id="no_telepon" name="no_telepon" type="tel" value="{{ old('no_telepon', $mahasiswa->no_telepon) }}" maxlength="30" autocomplete="tel" @error('no_telepon') aria-invalid="true" aria-describedby="phone-error" @enderror>
                     @error('no_telepon')<span id="phone-error" class="form-error">{{ $message }}</span>@enderror
                 </div>
                 <button class="btn btn-primary" type="submit">Simpan informasi kontak</button>

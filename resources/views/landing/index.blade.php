@@ -28,9 +28,9 @@
         <div class="container landing-container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6 hero-copy">
-                    <div class="eyebrow"><span class="eyebrow-dot"></span> Sistem Informasi Akademik · Explainable AI</div>
+                    <div class="eyebrow"><span class="eyebrow-dot"></span> Sistem Informasi Akademik</div>
                     <h1 id="hero-heading">Kenali Risiko Lebih Dini. <span class="text-uninlar-blue">Bantu Mahasiswa Melangkah Lebih Jauh.</span></h1>
-                    <p class="hero-description">Pahami kondisi akademik mahasiswa melalui analisis data yang transparan, penjelasan berbasis AI, dan rekomendasi intervensi yang terarah.</p>
+                    <p class="hero-description">Kelola KRS, nilai, dan informasi akademik. Tinjau hasil analisis serta rekomendasi yang telah tercatat.</p>
                     <div class="hero-actions">
                         <a class="btn btn-primary landing-btn landing-btn-primary" href="{{ route('login') }}">Masuk ke UniNalar</a>
                         <a class="btn landing-btn landing-btn-secondary" href="#fitur">Jelajahi fitur</a>
@@ -40,7 +40,7 @@
                 <div class="col-lg-6 hero-visual-wrap">
                     <div class="hero-visual" aria-label="Ilustrasi dashboard akademik dan analisis AI simulasi">
                         <div class="orb orb-one"></div><div class="orb orb-two"></div>
-                        <div class="hero-dashboard-card rounded-2xl shadow-xl">
+                        <div class="hero-dashboard-card rounded-2xl">
                             <div class="mini-dashboard-top">
                                 <div><span class="mini-label">RINGKASAN AKADEMIK</span><strong>Ikhtisar mahasiswa</strong></div>
                                 <span class="live-dot" title="Visual simulasi"></span>
@@ -80,10 +80,10 @@
                 <p>Satukan pemahaman, penjelasan, dan tindak lanjut dalam satu alur yang mudah digunakan.</p>
             </div>
             <div class="row g-4 feature-grid">
-                <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h17M7 15l4-4 3 2 6-7"/></svg></div><h3>Analisis risiko akademik</h3><p>Kenali perubahan kondisi lebih awal melalui skor yang dihitung dari aturan dan indikator terukur.</p><a href="#dashboard" aria-label="Lihat preview analisis risiko">Lihat preview <span aria-hidden="true">→</span></a></article></div>
+                <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-blue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h17M7 15l4-4 3 2 6-7"/></svg></div><h3>Analisis risiko akademik</h3><p>Tinjau skor, kategori, dan riwayat hasil analisis yang telah tersimpan.</p><a href="#dashboard" aria-label="Lihat preview analisis risiko">Lihat preview <span aria-hidden="true">→</span></a></article></div>
                 <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-teal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 7h10a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h11"/></svg></div><h3>Faktor yang transparan</h3><p>Pahami indikator yang berkontribusi pada hasil agar setiap penilaian dapat ditinjau kembali.</p><a href="#transparansi">Pelajari transparansi <span aria-hidden="true">→</span></a></article></div>
                 <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-violet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.3 9.7 21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3L12 3Z"/></svg></div><h3>Rekomendasi intervensi</h3><p>Ubah temuan menjadi opsi pendampingan yang relevan dan dapat dipilih oleh tim akademik.</p><a href="#cara-kerja">Lihat alur kerja <span aria-hidden="true">→</span></a></article></div>
-                <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5M12 3a9 9 0 1 0 9 9"/></svg></div><h3>Pemantauan tindak lanjut</h3><p>Catat progres intervensi dan jaga kesinambungan dukungan bagi setiap mahasiswa.</p><a href="#cta">Mulai mengenal UniNalar <span aria-hidden="true">→</span></a></article></div>
+                <div class="col-md-6 col-xl-3"><article class="feature-card h-100"><div class="feature-icon icon-amber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5M12 3a9 9 0 1 0 9 9"/></svg></div><h3>Pemantauan tindak lanjut</h3><p>Pantau status tindak lanjut yang sudah tercatat untuk setiap mahasiswa.</p><a href="#cta">Mulai mengenal UniNalar <span aria-hidden="true">→</span></a></article></div>
             </div>
         </div>
     </section>
@@ -122,8 +122,8 @@
             <div class="section-heading text-center"><span class="section-kicker">DARI DATA MENUJU DUKUNGAN</span><h2 id="workflow-heading">Empat tahap, <span class="text-uninlar-blue">satu tujuan.</span></h2><p>Teknologi membantu menyusun prioritas agar pendampingan akademik lebih terarah.</p></div>
             <div class="workflow-track row g-4">
                 <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">01</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg></div><h3>Data akademik</h3><p>Informasi akademik yang relevan menjadi titik awal analisis.</p></article></div>
-                <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">02</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg></div><h3>Hitung risiko</h3><p>Aturan dan indikator terukur menghasilkan skor yang dapat ditinjau.</p></article></div>
-                <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">03</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 7h10a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h11"/></svg></div><h3>Jelaskan & rekomendasikan</h3><p>XAI menerangkan faktor, AI membantu menyusun opsi tindak lanjut.</p></article></div>
+                <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">02</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M7 15l4-4 3 2 5-6"/></svg></div><h3>Tinjau hasil analisis</h3><p>Baca hasil tersimpan beserta sumbernya. Analisis otomatis belum diaktifkan.</p></article></div>
+                <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">03</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 7h10a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h11"/></svg></div><h3>Faktor dan rekomendasi</h3><p>Tinjau faktor dan rekomendasi yang tercatat pada hasil analisis.</p></article></div>
                 <div class="col-md-6 col-lg-3"><article class="workflow-step"><span class="step-number">04</span><div class="workflow-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5M12 3a9 9 0 1 0 9 9"/></svg></div><h3>Pantau tindak lanjut</h3><p>Tim akademik menentukan dukungan dan memantau progresnya.</p></article></div>
             </div>
         </div>

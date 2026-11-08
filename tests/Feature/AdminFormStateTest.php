@@ -12,6 +12,19 @@ class AdminFormStateTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_search_rejects_array_and_oversized_input_for_every_admin_resource(): void
+    {
+        $this->actingAs(User::factory()->create(['level' => 3]));
+        foreach (['program-studi', 'semester', 'mata-kuliah', 'dosen', 'mahasiswa', 'kelas-kuliah'] as $resource) {
+            $route = 'dashboard.admin-akademik.'.$resource.'.index';
+            foreach ([['unexpected'], str_repeat('q', 256)] as $invalid) {
+                $this->getJson(route($route, ['q' => $invalid]))->assertUnprocessable()->assertJsonValidationErrors('q');
+            }
+            $this->get(route($route, ['q' => '  tidak-ada  ']))->assertOk()
+                ->assertViewHas('search', 'tidak-ada');
+        }
+    }
+
     public function test_unchecked_active_state_survives_validation_failure(): void
     {
         $admin = User::factory()->create(['level' => 3]);

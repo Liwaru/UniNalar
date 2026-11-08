@@ -18,8 +18,19 @@ export default defineConfig({
             ],
             refresh: true,
         }),
-        tailwindcss(),
+        // Vite minifies after PostCSS removes imported charset declarations.
+        tailwindcss({ optimize: false }),
     ],
+    css: {
+        postcss: {
+            plugins: [{
+                // Bootstrap's charset declaration becomes nested inside @layer
+                // after import resolution. Vite emits UTF-8 assets already.
+                postcssPlugin: 'uninalar-remove-imported-charset',
+                AtRule: { charset: (rule) => rule.remove() },
+            }],
+        },
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

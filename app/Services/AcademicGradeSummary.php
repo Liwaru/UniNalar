@@ -17,10 +17,11 @@ class AcademicGradeSummary
     }
 
     /** One grade query for all selected students, avoiding a query per student. */
-    public function forStudents(Collection $students): Collection
+    public function forStudents(Collection $students, ?int $semesterId = null): Collection
     {
         $empty = ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
-        if ($students->isEmpty() || ! Schema::hasTable('nilai') || ! Schema::hasColumn('nilai', 'final_at')) {
+        if ($students->isEmpty() || ! collect(['users', 'program_studi', 'mahasiswa', 'dosen', 'semester', 'mata_kuliah', 'kelas_kuliah', 'krs', 'krs_detail', 'nilai'])
+            ->every(fn ($table) => Schema::hasTable($table)) || ! Schema::hasColumn('nilai', 'final_at')) {
             return $students->mapWithKeys(fn ($student) => [$student->id => $empty]);
         }
 
@@ -33,11 +34,11 @@ class AcademicGradeSummary
             ->groupBy(fn (Nilai $grade) => $grade->krsDetail->krs->mahasiswa_id);
 
         return $students->mapWithKeys(fn ($student) => [
-            $student->id => isset($grades[$student->id]) ? $this->summarize($grades[$student->id]) : $empty,
+            $student->id => isset($grades[$student->id]) ? $this->summarize($grades[$student->id], $semesterId) : $empty,
         ]);
     }
 
-    private function summarize(Collection $grades): array
+    private function summarize(Collection $grades, ?int $semesterId = null): array
     {
         $valid = $grades->filter(fn (Nilai $grade) => $this->points($grade) !== null
             && (int) ($grade->krsDetail?->kelasKuliah?->mataKuliah?->sks ?? 0) > 0)->values();
@@ -49,7 +50,7 @@ class AcademicGradeSummary
             ])->sortBy(fn (array $row) => sprintf('%s-%03d', $row['semester']->tahun_ajaran, $row['semester']->periode));
 
         $latestAttemptPerCourse = $valid->unique(fn (Nilai $grade) => $grade->krsDetail->kelasKuliah->mata_kuliah_id)->values();
-        $latestSemester = $bySemester->last();
+        $latestSemester = $semesterId !== null ? $bySemester->get($semesterId) : $bySemester->last();
 
         return [
             'ips' => $latestSemester['ips'] ?? null,

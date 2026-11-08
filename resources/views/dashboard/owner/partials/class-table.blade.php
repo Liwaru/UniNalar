@@ -1,0 +1,5 @@
+<p class="admin-help">Peserta resmi berasal dari KRS disetujui dengan mata kuliah berstatus diambil. Jumlah final dibandingkan dengan seluruh peserta resmi.</p>
+<div class="admin-table-wrap" role="region" aria-label="Daftar kelas" tabindex="0"><table class="admin-table"><thead><tr><th>Kelas</th><th>Mata kuliah</th><th>Semester</th><th>Dosen</th><th>Peserta resmi</th><th>Nilai final</th><th>Detail</th></tr></thead><tbody>
+@forelse(($records ?? []) as $item)<tr><td>{{ $item->kode_kelas }}</td><td>{{ $item->mataKuliah->kode }} · {{ $item->mataKuliah->nama }}</td><td>{{ $item->semester->kode }}</td><td>{{ $item->dosen?->nama ?? 'Belum ditetapkan' }}</td><td>{{ $item->official_count }}</td><td>{{ $finalizationAvailable ? $item->final_count.' / '.$item->official_count : 'Belum tersedia' }}</td><td><a href="{{ route('dashboard.owner.kelas.show', ['classRoom' => $item->id, 'semester_id' => $filters['semester_id'] ?? null]) }}">Lihat kelas</a></td></tr>@empty @include('dashboard.owner.partials.empty') @endforelse
+</tbody></table></div>
+@include('dashboard.owner.partials.pagination')

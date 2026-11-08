@@ -17,14 +17,14 @@
             <div class="student-section-heading"><div><h2>{{ $activeSemester->kode }}</h2><p>Periode KRS: @if ($registrationOpen) sedang dibuka @else tidak dibuka atau belum diatur @endif · Status: {{ $activeKrs?->status ?? 'draft' }}</p></div></div>
             <article class="student-card">
                 @if ($activeKrs?->details->isNotEmpty())
-                    <table class="data-table"><thead><tr><th>Mata kuliah</th><th>Kode</th><th>Kelas</th><th>SKS</th><th>Aksi</th></tr></thead><tbody>
+                    <div class="academic-table-wrap" role="region" aria-label="Tabel akademik" tabindex="0"><table class="data-table"><thead><tr><th>Mata kuliah</th><th>Kode</th><th>Kelas</th><th>SKS</th><th>Aksi</th></tr></thead><tbody>
                         @foreach ($activeKrs->details as $detail)
                             @php($course = $detail->kelasKuliah?->mataKuliah)
                             @if ($course)<tr><td><strong>{{ $course->nama }}</strong></td><td>{{ $course->kode }}</td><td>{{ $detail->kelasKuliah?->kode_kelas ?? '—' }}</td><td>{{ $course->sks }}</td><td>
                                 @if ($registrationOpen && in_array($activeKrs->status, ['draft', 'ditolak'], true))<form method="POST" action="{{ route('dashboard.mahasiswa.krs.detail.destroy', $detail) }}">@csrf @method('DELETE')<button type="submit">Hapus pilihan</button></form>@else {{ $activeKrs->status }} @endif
                             </td></tr>@endif
                         @endforeach
-                    </tbody></table>
+                    </tbody></table></div>
                 @else
                     <div class="empty-state"><strong>Belum ada kelas dipilih</strong><span>Pilih kelas operasional yang tersedia di bawah selama periode KRS dibuka.</span></div>
                 @endif
@@ -37,7 +37,7 @@
                             <select id="kelas-kuliah" name="kelas_kuliah_id" required>
                                 <option value="">Pilih mata kuliah dan kelas</option>
                                 @foreach ($availableClasses as $class)
-                                    <option value="{{ $class->id }}">{{ $class->mataKuliah->kode }} · {{ $class->mataKuliah->nama }} · Kelas {{ $class->kode_kelas }} · {{ $class->mataKuliah->sks }} SKS</option>
+                                    <option value="{{ $class->id }}" @selected((string) old('kelas_kuliah_id') === (string) $class->id) @disabled($class->kapasitas !== null && $class->reserved_places >= $class->kapasitas)>{{ $class->mataKuliah->kode }} · {{ $class->mataKuliah->nama }} · Kelas {{ $class->kode_kelas }} · {{ $class->mataKuliah->sks }} SKS · {{ $class->kapasitas === null ? 'Tanpa batas kapasitas' : ($class->reserved_places >= $class->kapasitas ? 'Kelas penuh' : 'Sisa '.max(0, $class->kapasitas - $class->reserved_places).' kursi') }}</option>
                                 @endforeach
                             </select>
                             <button type="submit">Tambahkan ke KRS</button>
@@ -53,22 +53,24 @@
                 @endif
             </article>
         </section>
+
+    @endif
+
         @if ($histories->isNotEmpty())
             <section class="student-section"><div class="student-section-heading"><div><h2>Riwayat pengajuan</h2><p>Snapshot setiap versi disimpan saat pengajuan dan tidak berubah ketika pilihan berikutnya diedit.</p></div></div><article class="student-card">
                 @foreach ($histories as $history)
-                    <div class="data-list-item"><div class="data-list-top"><strong>Versi {{ $history->versi }} · {{ ucfirst($history->status) }}</strong><span>{{ $history->diajukan_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</span></div>
+                    <div class="data-list-item"><div class="data-list-top"><strong>{{ $krs->firstWhere('id', $history->krs_id)?->semester?->kode ?? 'Semester' }} · Versi {{ $history->versi }} · {{ ucfirst($history->status) }}</strong><span>{{ $history->diajukan_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</span></div>
                         <ul>@foreach (($history->snapshot_kelas['kelas'] ?? []) as $snapshot)<li>{{ $snapshot['kode_mata_kuliah'] ?? 'Kode tidak tersedia' }} · {{ $snapshot['nama_mata_kuliah'] ?? 'Mata kuliah tidak tersedia' }} · {{ $snapshot['sks'] ?? '—' }} SKS</li>@endforeach</ul>
                         @if ($history->catatan_keputusan)<p>{{ $history->catatan_keputusan }}</p>@endif
                     </div>
                 @endforeach
             </article></section>
         @endif
-    @endif
 
     @forelse ($krs as $record)
-        @if ((int) $record->semester_id !== (int) ($activeSemester?->id ?? 0))
+        @if (!$workflowAvailable || (int) $record->semester_id !== (int) ($activeSemester?->id ?? 0))
             <section class="student-section"><div class="student-section-heading"><div><h2>{{ $record->semester?->kode ?? 'Semester' }}</h2><p>Status KRS: {{ $record->status }}</p></div></div><article class="student-card">
-                @if ($record->details->isNotEmpty())<table class="data-table"><thead><tr><th>Mata kuliah</th><th>Kode</th><th>Kelas</th><th>SKS</th></tr></thead><tbody>@foreach ($record->details as $detail)@php($course = $detail->kelasKuliah?->mataKuliah)@if ($course)<tr><td><strong>{{ $course->nama }}</strong></td><td>{{ $course->kode }}</td><td>{{ $detail->kelasKuliah?->kode_kelas ?? '—' }}</td><td>{{ $course->sks }}</td></tr>@endif @endforeach</tbody></table>@else<div class="empty-state"><strong>Detail KRS belum tersedia</strong><span>Belum ada mata kuliah pada KRS semester ini.</span></div>@endif
+                @if ($record->details->isNotEmpty())<div class="academic-table-wrap" role="region" aria-label="Tabel akademik" tabindex="0"><table class="data-table"><thead><tr><th>Mata kuliah</th><th>Kode</th><th>Kelas</th><th>SKS</th></tr></thead><tbody>@foreach ($record->details as $detail)@php($course = $detail->kelasKuliah?->mataKuliah)@if ($course)<tr><td><strong>{{ $course->nama }}</strong></td><td>{{ $course->kode }}</td><td>{{ $detail->kelasKuliah?->kode_kelas ?? '—' }}</td><td>{{ $course->sks }}</td></tr>@endif @endforeach</tbody></table></div>@else<div class="empty-state"><strong>Detail KRS belum tersedia</strong><span>Belum ada mata kuliah pada KRS semester ini.</span></div>@endif
             </article></section>
         @endif
     @empty

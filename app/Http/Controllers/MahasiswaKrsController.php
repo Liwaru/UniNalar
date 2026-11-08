@@ -6,6 +6,7 @@ use App\Services\KrsSubmissionService;
 use App\Services\MahasiswaOperationalData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class MahasiswaKrsController extends Controller
@@ -25,18 +26,25 @@ class MahasiswaKrsController extends Controller
         $records = collect();
         $histories = collect();
 
-        if ($student && $semester && $this->workflow->workflowAvailable()) {
-            $records = $this->operationalData->krsQuery($student->id)
-                ->with(['semester', 'details.kelasKuliah.mataKuliah'])
-                ->orderByDesc('semester_id')->get();
-            $krs = $records->firstWhere('semester_id', $semester->id);
-            if ($krs) {
-                $krs->load(['riwayatPengajuan' => fn ($query) => $query->orderByDesc('versi')]);
+        $workflowAvailable = $this->workflow->workflowAvailable();
+        // Readable audit records do not depend on mutation-readiness constraints.
+        $historyAvailable = array_diff(['krs_id', 'versi', 'diajukan_pada', 'status', 'snapshot_kelas', 'catatan_keputusan'], Schema::getColumnListing('krs_pengajuan_riwayat')) === [];
+        if ($student && $this->operationalData->hasTables(['users', 'program_studi', 'dosen', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])) {
+            $relations = ['semester', 'details.kelasKuliah.mataKuliah'];
+            if ($historyAvailable) {
+                $relations['riwayatPengajuan'] = fn ($query) => $query->orderByDesc('versi');
             }
-            $available = $this->workflow->availableClasses($student, $semester)->get()
-                ->filter(fn ($class) => ! $krs?->details->contains('kelas_kuliah_id', $class->id))
-                ->values();
-            $histories = $krs?->riwayatPengajuan ?? collect();
+            $records = $this->operationalData->krsQuery($student->id)
+                ->with($relations)->orderByDesc('semester_id')->get();
+            $krs = $semester ? $records->firstWhere('semester_id', $semester->id) : null;
+            $histories = $historyAvailable
+                ? $records->flatMap(fn ($record) => $record->riwayatPengajuan)->sortByDesc('diajukan_pada')->values()
+                : collect();
+            if ($semester && $workflowAvailable) {
+                $available = $this->workflow->availableClasses($student, $semester)
+                    ->withCount(['krsDetails as reserved_places' => fn ($query) => $query->whereHas('krs', fn ($krs) => $krs->whereIn('status', ['menunggu', 'disetujui']))])->get()
+                    ->filter(fn ($class) => ! $krs?->details->contains('kelas_kuliah_id', $class->id))->values();
+            }
         }
 
         return view('dashboard.mahasiswa.krs', [
@@ -47,7 +55,7 @@ class MahasiswaKrsController extends Controller
             'semesterAktif' => $semester,
             'availableClasses' => $available,
             'histories' => $histories,
-            'workflowAvailable' => $this->workflow->workflowAvailable(),
+            'workflowAvailable' => $workflowAvailable,
             'registrationOpen' => $semester ? $this->workflow->registrationIsOpen($semester) : false,
             'pageTitle' => 'KRS dan Mata Kuliah',
         ]);

@@ -15,6 +15,26 @@ class AdminMasterTest extends MysqlTestCase
 {
     use DatabaseTransactions;
 
+    public function test_published_summaries_and_search_validation_on_mysql(): void
+    {
+        $d = MysqlFixtures::make();
+        $detail = MysqlFixtures::detail($d);
+        $grade = app(GradeEntryService::class)->save($d['lecturerUser'], $detail->id, ['nilai_angka' => 90, 'nilai_huruf' => 'A']);
+        $this->actingAs($d['users'][0])->get(route('dashboard.mahasiswa'))->assertOk()
+            ->assertViewHas('rataRataNilai', null)->assertViewHas('jumlahNilai', 0);
+        app(GradeFinalizationService::class)->finalize($d['lecturerUser'], $grade->id);
+        $this->get(route('dashboard.mahasiswa'))->assertOk()
+            ->assertViewHas('rataRataNilai', 90.0)->assertViewHas('jumlahNilai', 1);
+        $this->actingAs(User::factory()->create(['level' => 4]))
+            ->get(route('dashboard.owner', ['program_studi_id' => $d['program']->id]))->assertOk()
+            ->assertViewHas('totals', ['students' => 1, 'lecturers' => 1, 'programs' => 1]);
+        $this->actingAs($d['admin']);
+        foreach (['mahasiswa', 'kelas-kuliah'] as $resource) {
+            $this->getJson(route('dashboard.admin-akademik.'.$resource.'.index', ['q' => ['invalid']]))
+                ->assertUnprocessable()->assertJsonValidationErrors('q');
+        }
+    }
+
     public function test_login_rechecks_intended_role_with_mysql(): void
     {
         $user = User::factory()->create(['username' => 'qa_redirect_'.bin2hex(random_bytes(4)), 'level' => 3, 'password' => Hash::make('isolated-login-only')]);

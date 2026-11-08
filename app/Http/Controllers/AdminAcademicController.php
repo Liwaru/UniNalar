@@ -8,6 +8,7 @@ use App\Models\MataKuliah;
 use App\Models\ProgramStudi;
 use App\Models\Semester;
 use App\Models\User;
+use App\Services\AdminAcademicData;
 use App\Services\OperationalAcademicData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
@@ -27,8 +28,18 @@ class AdminAcademicController extends Controller
     {
         $config = $this->resourceConfig();
         $query = $this->operationalQuery($config);
+        $filterFields = match ($config['key']) {
+            'program-studi', 'semester' => ['aktif'],
+            'mata-kuliah' => ['program_studi_id'],
+            'dosen' => ['program_studi_id', 'aktif'],
+            'mahasiswa' => ['program_studi_id', 'status'],
+        };
+        $filterData = app(AdminAcademicData::class)->filters($request, $filterFields);
+        $filters = $filterData['filters'];
+        app(AdminAcademicData::class)->apply($query, $filters);
 
-        if ($search = trim((string) $request->query('q'))) {
+        $search = trim($filters['q'] ?? '');
+        if ($search !== '') {
             $query->where(function (Builder $builder) use ($config, $search): void {
                 foreach ($config['search'] as $column) {
                     if (str_contains($column, '.')) {
@@ -47,7 +58,7 @@ class AdminAcademicController extends Controller
             'config' => $config,
             'records' => $records,
             'search' => $search ?? '',
-        ]);
+        ] + $filterData);
     }
 
     public function create(): View
@@ -58,8 +69,15 @@ class AdminAcademicController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $config = $this->resourceConfig();
-        $data = $this->validatedData($request, $config);
-        $config['model']::query()->create($data);
+        try {
+            DB::transaction(function () use ($request, $config): void {
+                $this->lockSemesters($config);
+                $data = $this->validatedData($request, $config);
+                $config['model']::query()->create($data);
+            }, 3);
+        } catch (QueryException $exception) {
+            $this->handleConstraint($exception);
+        }
 
         return redirect()->route($config['route'].'.index')->with('status', $config['label'].' berhasil ditambahkan.');
     }
@@ -74,20 +92,25 @@ class AdminAcademicController extends Controller
     public function update(Request $request, string $record): RedirectResponse
     {
         $config = $this->resourceConfig();
-        DB::transaction(function () use ($request, $record, $config): void {
-            $model = $this->operationalQuery($config)->lockForUpdate()->findOrFail($record);
-            $values = $this->validatedData($request, $config, $model);
-            if ($config['key'] === 'mata-kuliah' && (int) $values['sks'] !== (int) $model->sks) {
-                // Serialize with registration's class locks before checking current
-                // detail rows; an older REPEATABLE READ snapshot is insufficient.
-                $classIds = $model->kelasKuliah()->orderBy('id')->lockForUpdate()->pluck('id');
-                $used = DB::table('krs_detail')->whereIn('kelas_kuliah_id', $classIds)->lockForUpdate()->first();
-                if ($used) {
-                    throw ValidationException::withMessages(['sks' => 'SKS mata kuliah yang sudah digunakan KRS tidak dapat diubah agar riwayat akademik tetap konsisten.']);
+        try {
+            DB::transaction(function () use ($request, $record, $config): void {
+                $this->lockSemesters($config);
+                $model = $this->operationalQuery($config)->lockForUpdate()->findOrFail($record);
+                $values = $this->validatedData($request, $config, $model);
+                if ($config['key'] === 'mata-kuliah' && (int) $values['sks'] !== (int) $model->sks) {
+                    // Serialize with registration's class locks before checking current
+                    // detail rows; an older REPEATABLE READ snapshot is insufficient.
+                    $classIds = $model->kelasKuliah()->orderBy('id')->lockForUpdate()->pluck('id');
+                    $used = DB::table('krs_detail')->whereIn('kelas_kuliah_id', $classIds)->lockForUpdate()->first();
+                    if ($used) {
+                        throw ValidationException::withMessages(['sks' => 'SKS mata kuliah yang sudah digunakan KRS tidak dapat diubah agar riwayat akademik tetap konsisten.']);
+                    }
                 }
-            }
-            $model->update($values);
-        }, 3);
+                $model->update($values);
+            }, 3);
+        } catch (QueryException $exception) {
+            $this->handleConstraint($exception);
+        }
 
         return redirect()->route($config['route'].'.index')->with('status', $config['label'].' berhasil diperbarui.');
     }
@@ -95,25 +118,57 @@ class AdminAcademicController extends Controller
     public function destroy(string $record): RedirectResponse
     {
         $config = $this->resourceConfig();
-        $model = $this->operationalQuery($config)->findOrFail($record);
+        try {
+            $message = DB::transaction(function () use ($config, $record): ?string {
+                $model = $this->operationalQuery($config)->lockForUpdate()->findOrFail($record);
+                foreach ($config['protected_relations'] as $relation => $message) {
+                    if ($model->{$relation}()->lockForUpdate()->first()) {
+                        return $message;
+                    }
+                }
+                $model->delete();
 
-        foreach ($config['protected_relations'] as $relation => $message) {
-            if ($model->{$relation}()->exists()) {
+                return null;
+            }, 3);
+            if ($message) {
                 return back()->with('error', $message);
             }
-        }
-
-        try {
-            $model->delete();
         } catch (QueryException $exception) {
             if (! in_array((string) ($exception->errorInfo[0] ?? ''), ['23000', '23503'], true)) {
                 throw $exception;
             }
 
-            return back()->with('error', 'Data tidak dapat dihapus karena masih digunakan oleh catatan akademik lain.');
+            return back()->with('error', 'Data masih digunakan oleh catatan akademik lain.');
         }
 
         return redirect()->route($config['route'].'.index')->with('status', $config['label'].' berhasil dihapus.');
+    }
+
+    public function show(string $record): View
+    {
+        $config = $this->resourceConfig();
+        $record = $this->operationalQuery($config)->withCount(array_keys($config['protected_relations']))->findOrFail($record);
+        $krs = $config['key'] === 'mahasiswa'
+            ? OperationalAcademicData::krs()->where('mahasiswa_id', $record->id)->with('semester')->withCount('details')->orderByDesc('semester_id')->paginate(15)
+            : null;
+
+        return view('dashboard.admin-akademik.resource-detail', compact('config', 'record', 'krs'));
+    }
+
+    private function lockSemesters(array $config): void
+    {
+        if ($config['key'] === 'semester') {
+            // Serialize the already-defined single-active-semester validation.
+            Semester::query()->orderBy('id')->lockForUpdate()->get(['id']);
+        }
+    }
+
+    private function handleConstraint(QueryException $exception): never
+    {
+        if (! in_array((string) ($exception->errorInfo[0] ?? ''), ['23000', '23503'], true)) {
+            throw $exception;
+        }
+        throw ValidationException::withMessages(['data' => 'Data duplikat atau relasinya telah berubah. Muat ulang dan periksa kembali isian.']);
     }
 
     private function formView(ProgramStudi|Semester|MataKuliah|Dosen|Mahasiswa|null $record): View
@@ -142,6 +197,20 @@ class AdminAcademicController extends Controller
                 })->orderBy('name')->pluck('name', 'id')->all();
         }
 
+        foreach ($config['fields'] as $field => &$definition) {
+            if (in_array($definition['type'], ['text', 'email'], true) && preg_match('/(?:^|\|)max:(\d+)/', $config['rules'][$field] ?? '', $match)) {
+                $definition['maxlength'] = (int) $match[1];
+            }
+            $definition['help'] = match ($field) {
+                'user_id' => 'Pilih akun dengan role yang sesuai. Kredensial login dikelola terpisah.',
+                'sks' => 'SKS tidak dapat diubah setelah mata kuliah digunakan dalam KRS.',
+                'tahun_ajaran' => 'Format: 2026/2027.',
+                'krs_mulai_pada', 'krs_selesai_pada' => 'Waktu Indonesia Barat (WIB). Isi waktu mulai dan akhir untuk membuka periode KRS.',
+                default => null,
+            };
+        }
+        unset($definition);
+
         return view('dashboard.admin-akademik.resource-form', compact('config', 'record', 'options'));
     }
 
@@ -163,7 +232,7 @@ class AdminAcademicController extends Controller
             $rules['email'] .= '|not_regex:/@demo\.uninlar\.test$/i';
             $requiredLevel = $table === 'dosen' ? User::ROLE_DOSEN : User::ROLE_MAHASISWA;
             $rules['user_id'] = [
-                'nullable',
+                'nullable', 'integer',
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('level', $requiredLevel)->where('email', 'not like', '%'.self::DEMO_USER_DOMAIN)),
                 Rule::unique($table, 'user_id')->ignore($record?->getKey()),
             ];
@@ -172,7 +241,7 @@ class AdminAcademicController extends Controller
         if (array_key_exists('program_studi_id', $rules)) {
             $required = str_contains($rules['program_studi_id'], 'required') ? 'required' : 'nullable';
             $rules['program_studi_id'] = [
-                $required,
+                $required, 'integer',
                 Rule::exists('program_studi', 'id')->where(fn ($query) => $query
                     ->where('kode', 'not like', '%-DEMO')
                     ->where(fn ($scope) => $scope->where('aktif', true)
@@ -196,7 +265,7 @@ class AdminAcademicController extends Controller
 
         $data = $request->validate($rules, [
             'email.not_regex' => 'Domain email tersebut khusus data demo dan tidak dapat digunakan untuk profil operasional.',
-        ]);
+        ] + AdminAcademicData::messages(), collect($config['fields'])->mapWithKeys(fn ($definition, $field) => [$field => $definition['label']])->all());
 
         foreach (['krs_mulai_pada', 'krs_selesai_pada'] as $field) {
             if (isset($data[$field])) {
@@ -213,22 +282,12 @@ class AdminAcademicController extends Controller
 
     private function operationalQuery(array $config): Builder
     {
-        $query = $config['model']::query()->with($config['with'] ?? []);
-
-        match ($config['key']) {
-            'program-studi' => $query->where('kode', 'not like', '%-DEMO'),
-            'semester' => $query->where('kode', 'not like', 'DEMO%'),
-            'mata-kuliah' => $query->where('kode', 'not like', 'DEMO%')->whereHas('programStudi', fn (Builder $program) => $program->where('kode', 'not like', '%-DEMO')),
-            'dosen' => OperationalAcademicData::scopeLecturer($query),
-            'mahasiswa' => OperationalAcademicData::scopeStudent($query),
-            default => null,
-        };
-
-        return $query;
+        return app(AdminAcademicData::class)->masterQuery($config['key'])->with($config['with'] ?? []);
     }
 
     private function resourceConfig(): array
     {
+        abort_unless(app(AdminAcademicData::class)->available(), 503, 'Data administrasi akademik belum tersedia.');
         $routeName = (string) request()->route()?->getName();
         $key = explode('.', str_replace('dashboard.admin-akademik.', '', $routeName))[0] ?? '';
 
@@ -274,6 +333,7 @@ class AdminAcademicController extends Controller
 
         $config = $configs[$key];
         $config['key'] = $key;
+        $config['show'] = true;
 
         if ($key === 'semester' && Schema::hasColumn('semester', 'krs_mulai_pada') && Schema::hasColumn('semester', 'krs_selesai_pada')) {
             $config['columns']['krs_mulai_pada'] = 'KRS dibuka';

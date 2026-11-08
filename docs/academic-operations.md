@@ -26,8 +26,10 @@ stopped; an approved read-only command outside the sandbox reached the Engine.
   individual Eloquent updates/deletes. Model events cannot protect arbitrary SQL
   or bulk operations; no reopening route is added.
 - IPS uses valid final grades weighted by SKS. IPK uses the latest finalized course
-  attempt. Owner labels these all-history metrics; semester filtering affects KRS,
-  analyses, recommendations and follow-ups. No owner-to-program mapping exists;
+  attempt. Owner IPK remains all-history. Owner IPS uses the selected semester, or the
+  latest semester with valid final grades when no semester is selected. Semester
+  filtering also affects KRS, classes, grades, attendance, analyses, recommendations
+  and follow-ups. No owner-to-program mapping exists;
   the existing level-4 role monitors all programs.
 - Shared operational filters check known demo code/email markers and JSON
   `ringkasan.sumber` values. Legacy records with no provenance cannot be classified

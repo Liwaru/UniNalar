@@ -8,25 +8,26 @@
             <a class="admin-button" href="{{ route($config['route'].'.create') }}">Tambah {{ $config['label'] }}</a>
         </div>
 
-        @if (session('status'))<div class="admin-alert success" role="status">{{ session('status') }}</div>@endif
-        @if (session('error'))<div class="admin-alert error" role="alert">{{ session('error') }}</div>@endif
-
         <form class="admin-search" method="GET" action="{{ route($config['route'].'.index') }}">
             <label for="admin-search">Cari data</label>
-            <input id="admin-search" type="search" name="q" value="{{ $search }}" placeholder="Cari {{ strtolower($config['label']) }}">
+            <input id="admin-search" type="search" name="q" maxlength="255" value="{{ $search }}" placeholder="Cari {{ strtolower($config['label']) }}">
+            @include('dashboard.admin-akademik.partials.filters')
             <button class="admin-button secondary" type="submit">Cari</button>
-            @if ($search !== '')<a class="admin-clear" href="{{ route($config['route'].'.index') }}">Hapus pencarian</a>@endif
+            @if ($search !== '' || count(array_filter($filters ?? [], fn ($v) => $v !== null && $v !== '')) > 0)<a class="admin-clear" href="{{ route($config['route'].'.index') }}">Hapus pencarian</a>@endif
         </form>
 
-        @if ($errors->any())<div class="admin-alert error" role="alert">@foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-        <div class="admin-table-wrap">
+        <div class="admin-table-wrap" role="region" aria-label="Daftar data akademik" tabindex="0">
             <table class="admin-table">
                 <thead><tr>@foreach ($config['columns'] as $label)<th scope="col">{{ $label }}</th>@endforeach<th scope="col">Aksi</th></tr></thead>
                 <tbody>
                     @forelse ($records as $record)
                         <tr>
                             @foreach ($config['columns'] as $field => $label)
-                                @php($value = data_get($record, $field))
+                                @php
+                                    $value = data_get($record, $field);
+                                    if ($value instanceof \DateTimeInterface) $value = $value->format('d/m/Y');
+                                    if ($field === 'kapasitas' && $value === null) $value = 'Tanpa batas';
+                                @endphp
                                 <td>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
                             @endforeach
                             <td><div class="admin-row-actions">

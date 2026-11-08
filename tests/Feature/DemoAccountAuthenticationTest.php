@@ -50,7 +50,8 @@ class DemoAccountAuthenticationTest extends TestCase
                     ->assertDontSee('0.4200');
             } elseif ($account['level'] === User::ROLE_ADMIN_AKADEMIK) {
                 $dashboard->assertSee('Akun demo.')
-                    ->assertSee('Kelola referensi akademik dan profil yang dimasukkan dari sumber resmi.')
+                    ->assertSee('Data akademik')
+                    ->assertViewHas('totals', fn ($totals) => $totals->count() === 6 && $totals->sum() === 0)
                     ->assertDontSee('0.4200');
             } else {
                 $dashboard->assertSee('Akun demo.')

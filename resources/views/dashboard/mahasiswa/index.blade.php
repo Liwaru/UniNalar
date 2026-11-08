@@ -22,7 +22,7 @@
         <div class="summary-grid">
             <article class="summary-card">
                 <div class="summary-card-top"><span>Rata-rata nilai</span><span class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M7 15l3-4 3 2 5-7"/></svg></span></div>
-                @if ($rataRataNilai !== null)<div class="summary-value">{{ number_format((float) $rataRataNilai, 2) }}</div><div class="summary-note">Dari {{ $jumlahNilai }} nilai · bukan IPS/IPK</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Data nilai angka belum tersedia.</div>@endif
+                @if ($rataRataNilai !== null)<div class="summary-value">{{ number_format((float) $rataRataNilai, 2) }}</div><div class="summary-note">Dari {{ $jumlahNilai }} nilai final · bukan IPS/IPK</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Data nilai angka belum tersedia dalam status final.</div>@endif
                 <a class="text-link" href="{{ route('dashboard.mahasiswa.nilai') }}">Lihat nilai</a>
             </article>
             <article class="summary-card">
@@ -45,7 +45,7 @@
             </article>
             <article class="summary-card">
                 <div class="summary-card-top"><span>Mata kuliah aktif</span><span class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21zM4 4.5v14A2.5 2.5 0 0 1 6.5 16H20"/><path d="M8 6h8m-8 3h8"/></svg></span></div>
-                @if ($semesterAktif && $jumlahMataKuliahAktif > 0)<div class="summary-value">{{ $jumlahMataKuliahAktif }}</div><div class="summary-note">Diambil pada {{ $semesterAktif->kode }}</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Tidak ada mata kuliah aktif tercatat.</div>@endif
+                @if ($semesterAktif && $jumlahMataKuliahAktif > 0)<div class="summary-value">{{ $jumlahMataKuliahAktif }}</div><div class="summary-note">{{ $activeKrs?->status === 'disetujui' ? 'Disetujui' : 'Dipilih' }} pada {{ $semesterAktif->kode }}</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Tidak ada mata kuliah aktif tercatat.</div>@endif
                 <a class="text-link" href="{{ route('dashboard.mahasiswa.krs') }}">Lihat KRS</a>
             </article>
             <article class="summary-card">
@@ -54,6 +54,20 @@
                 <a class="text-link" href="{{ route('dashboard.mahasiswa.analisis-risiko') }}">Lihat analisis</a>
             </article>
         </div>
+    </section>
+
+    <section class="student-section" aria-labelledby="krs-summary-title">
+        <div class="student-section-heading"><h2 id="krs-summary-title">KRS semester aktif</h2></div>
+        <article class="student-card">
+            @if ($semesterAktif)
+                <p>Semester: <strong>{{ $semesterAktif->kode }}</strong> · Status KRS: <strong>{{ $activeKrs?->status ?? 'Belum memiliki KRS' }}</strong></p>
+                @if ($activeKrs)<p>{{ $jumlahMataKuliahAktif }} mata kuliah dipilih · {{ $jumlahSksAktif }} SKS</p>@endif
+                <p class="card-subtitle">Pilihan kelas mengikuti status KRS; hanya KRS disetujui yang menjadi peserta perkuliahan.</p>
+            @else
+                <p>Semester aktif belum tersedia. Riwayat KRS tetap dapat dilihat.</p>
+            @endif
+            <a class="text-link" href="{{ route('dashboard.mahasiswa.krs') }}">Kelola dan lihat riwayat KRS</a>
+        </article>
     </section>
 
     <section class="student-section" aria-labelledby="grade-index-title">
@@ -70,7 +84,7 @@
     </section>
 
     <section class="student-section" aria-labelledby="trend-title">
-        <div class="student-section-heading"><div><h2 id="trend-title">Perkembangan nilai</h2><p>Rata-rata nilai angka per semester dari catatan Anda.</p></div></div>
+        <div class="student-section-heading"><div><h2 id="trend-title">Perkembangan nilai</h2><p>Rata-rata nilai angka final per semester dari KRS yang disetujui.</p></div></div>
         <article class="student-card">
             @if ($grafik['tersedia'])
                 <div class="chart-wrap"><canvas id="academicTrendChart" aria-label="Grafik rata-rata nilai per semester" role="img"></canvas></div>
@@ -82,7 +96,7 @@
     </section>
 
     <section class="student-grid-main" aria-label="Tautan fitur akademik">
-        <article class="student-card"><h3>Rekomendasi intervensi</h3><p class="card-subtitle">Buka daftar rekomendasi yang terkait dengan analisis Anda.</p><a class="text-link" href="{{ route('dashboard.mahasiswa.rekomendasi') }}">Buka rekomendasi</a></article>
-        <article class="student-card"><h3>Tindak lanjut</h3><p class="card-subtitle">Lihat status tindak lanjut yang tercatat.</p><a class="text-link" href="{{ route('dashboard.mahasiswa.tindak-lanjut') }}">Buka tindak lanjut</a></article>
+        <article class="student-card"><h3>Rekomendasi intervensi</h3><p class="card-subtitle">{{ $recommendationCount !== null ? $recommendationCount.' rekomendasi tercatat pada analisis Anda.' : 'Data rekomendasi belum tersedia.' }}</p><a class="text-link" href="{{ route('dashboard.mahasiswa.rekomendasi') }}">Buka rekomendasi</a></article>
+        <article class="student-card"><h3>Tindak lanjut</h3><p class="card-subtitle">{{ $followUpCount !== null ? $followUpCount.' catatan tindak lanjut tersedia.' : 'Data tindak lanjut belum tersedia.' }}</p><a class="text-link" href="{{ route('dashboard.mahasiswa.tindak-lanjut') }}">Buka tindak lanjut</a></article>
     </section>
 @endsection

@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminAcademicController;
 use App\Http\Controllers\AdminKelasKuliahController;
 use App\Models\User;
 use App\Services\GradeEntryService;
 use App\Services\GradeFinalizationService;
 use App\Services\KrsDecisionService;
 use App\Services\KrsSubmissionService;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -43,6 +46,17 @@ try {
         'grade' => app(GradeEntryService::class)->save($actor, $args['id'], $args['values']),
         'finalize' => app(GradeFinalizationService::class)->finalize($actor, $args['id']),
         'delete' => app(AdminKelasKuliahController::class)->destroy($args['id']),
+        'class-update' => app(AdminKelasKuliahController::class)->update(Request::create('/qa', 'PUT', $args['values']), $args['id']),
+        'semester-store' => (function () use ($args, $actor, $app) {
+            $request = Request::create('/qa-semester', 'POST', $args['values']);
+            $route = new Route(['POST'], '/qa-semester', ['uses' => fn () => null]);
+            $route->name('dashboard.admin-akademik.semester.store');
+            $request->setRouteResolver(fn () => $route);
+            $request->setUserResolver(fn () => $actor);
+            $app->instance('request', $request);
+
+            return app(AdminAcademicController::class)->store($request);
+        })(),
     };
     $status = 'ok';
 } catch (ValidationException $e) {

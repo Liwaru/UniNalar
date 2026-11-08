@@ -3,6 +3,7 @@
 @section('page-title', 'Rekomendasi Intervensi')
 @section('page-subtitle', 'Rekomendasi yang tercatat pada analisis risiko Anda.')
 @section('content')
+    @include('dashboard.mahasiswa.partials.semester-filter')
     <article class="student-card">
         @if ($recommendations->isNotEmpty())
             <div class="data-list">
@@ -17,4 +18,5 @@
             <div class="empty-state" role="status"><strong>Rekomendasi belum tersedia</strong><span>Rekomendasi akan tampil jika tercatat pada analisis operasional Anda.</span></div>
         @endif
     </article>
+    @if ($recommendations instanceof \Illuminate\Contracts\Pagination\Paginator)<div class="student-pagination">{{ $recommendations->links() }}</div>@endif
 @endsection

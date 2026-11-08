@@ -26,6 +26,42 @@
 # Local QA evidence and source/vendor snapshots are backed up separately.
 /qa-artifacts/
 /.playwright-mcp/
+# Local backups/dumps only; SQL migrations and test fixtures stay trackable.
+/backups/
+/dumps/
+/backup*.sql
+/backup*.sql.*
+/dump*.sql
+/dump*.sql.*
+/database*.sql
+/database*.sql.*
+/uninalar*.sql
+/uninalar*.sql.*
+/backup*.zip
+/backup*.tar
+/backup*.tar.*
+/source*.tar
+/source*.tar.*
+/*.bak
+/*~
+/*.sqlite
+/*.sqlite-*
+/*.sqlite3
+/*.sqlite3-*
+# Browser authentication state and generated reports are machine-local.
+/.auth/
+/playwright/.auth/
+/playwright-report/
+/test-results/
+/browser-profiles/
+/browser-cookies*.json
+/storage-state*.json
+# Explicit local secret locations; example environments remain trackable.
+/.secrets/
+/secrets.local/
+/credentials.local.json
+/*.pem
+/*.key
 Homestead.json
 Homestead.yaml
 Thumbs.db

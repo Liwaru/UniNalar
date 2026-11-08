@@ -23,6 +23,10 @@ class MahasiswaOperationalData
                 ->first()
             : null;
 
+        if ($profile && ! Schema::hasTable('program_studi')) {
+            $profile->setRelation('programStudi', null);
+        }
+
         $isDemoProfile = $profile !== null && (
             str_starts_with(strtoupper($profile->nim), 'DEMO')
             || str_ends_with(strtoupper($profile->programStudi?->kode ?? ''), '-DEMO')

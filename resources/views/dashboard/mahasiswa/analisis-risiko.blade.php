@@ -3,10 +3,12 @@
 @section('page-title', 'Analisis Risiko')
 @section('page-subtitle', 'Riwayat analisis dan faktor penjelas yang tersimpan.')
 @section('content')
+    @include('dashboard.mahasiswa.partials.semester-filter')
     @forelse ($analyses as $analysis)
         <section class="student-section">
-            <div class="student-section-heading"><div><h2>{{ $analysis->semester?->kode ?? 'Periode tidak dicantumkan' }}</h2><p>Dianalisis {{ $analysis->dianalisis_pada?->format('d/m/Y H:i') ?? 'waktu belum tersedia' }}</p></div><span class="risk-badge">{{ str_replace(['_', '-'], ' ', $analysis->kategori) }}</span></div>
+            <div class="student-section-heading"><div><h2>{{ $analysis->semester?->kode ?? 'Periode tidak dicantumkan' }}</h2><p>Dianalisis {{ $analysis->dianalisis_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i \W\I\B') ?? 'waktu belum tersedia' }}</p></div><span class="risk-badge">{{ str_replace(['_', '-'], ' ', $analysis->kategori) }}</span></div>
             <article class="student-card">
+                <p class="data-meta">Versi metode/model: {{ $analysis->versi_model ?? 'Belum dicatat' }} · Sumber: {{ is_array($analysis->ringkasan) && is_string($analysis->ringkasan['sumber'] ?? null) ? $analysis->ringkasan['sumber'] : 'Belum dicatat' }}</p>
                 <p class="risk-score">Skor tercatat: {{ number_format((float) $analysis->skor, 4) }}</p>
                 @if (is_array($analysis->ringkasan) && is_string($analysis->ringkasan['penjelasan'] ?? null) && trim($analysis->ringkasan['penjelasan']) !== '')<p class="risk-description">{{ $analysis->ringkasan['penjelasan'] }}</p>@elseif (is_string($analysis->ringkasan) && trim($analysis->ringkasan) !== '')<p class="risk-description">{{ $analysis->ringkasan }}</p>@endif
                 @if ($analysis->faktorRisiko->isNotEmpty())
@@ -23,4 +25,5 @@
     @empty
         <div class="empty-state" role="status"><strong>Analisis risiko belum tersedia</strong><span>Dashboard hanya menampilkan analisis yang sudah tersimpan. Skor tidak dihitung otomatis.</span></div>
     @endforelse
+    @if ($analyses instanceof \Illuminate\Contracts\Pagination\Paginator)<div class="student-pagination">{{ $analyses->links() }}</div>@endif
 @endsection

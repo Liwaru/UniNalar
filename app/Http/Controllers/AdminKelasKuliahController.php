@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KelasKuliah;
 use App\Models\Semester;
+use App\Services\AdminAcademicData;
 use App\Services\OperationalAcademicData;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -17,8 +18,12 @@ class AdminKelasKuliahController extends Controller
 {
     public function index(Request $request): View
     {
-        $search = trim((string) $request->query('q', ''));
+        $config = $this->config();
+        $filterData = app(AdminAcademicData::class)->filters($request, ['program_studi_id', 'semester_id', 'dosen_id', 'mata_kuliah_id']);
+        $filters = $filterData['filters'];
+        $search = trim($filters['q'] ?? '');
         $query = OperationalAcademicData::classes()->with(['mataKuliah', 'semester', 'dosen']);
+        app(AdminAcademicData::class)->apply($query, $filters, true);
         if ($search !== '') {
             $query->where(fn ($q) => $q->where('kode_kelas', 'like', "%{$search}%")
                 ->orWhereHas('mataKuliah', fn ($c) => $c->where('nama', 'like', "%{$search}%")->orWhere('kode', 'like', "%{$search}%"))
@@ -28,15 +33,21 @@ class AdminKelasKuliahController extends Controller
         $records = $query->orderByDesc('id')->paginate(15)->withQueryString();
         $config = $this->config();
 
-        return view('dashboard.admin-akademik.resource-index', compact('config', 'records', 'search'));
+        return view('dashboard.admin-akademik.resource-index', compact('config', 'records', 'search') + $filterData);
     }
 
-    public function show(int $kelas_kuliah): View
+    public function show(Request $request, int $kelas_kuliah): View
     {
+        $this->config();
         $record = OperationalAcademicData::classes()->with(['mataKuliah.programStudi', 'semester', 'dosen'])->findOrFail($kelas_kuliah);
         $enrollments = $record->krsDetails()->whereHas('krs', fn ($q) => $q->whereIn('status', ['menunggu', 'disetujui']))->count();
 
-        return view('dashboard.admin-akademik.kelas-detail', compact('record', 'enrollments'));
+        $filters = $request->validate(['status' => ['nullable', Rule::in(['draft', 'menunggu', 'disetujui', 'ditolak'])]], AdminAcademicData::messages(), ['status' => 'Status KRS']);
+        $participants = $record->krsDetails()->whereHas('krs', fn ($q) => OperationalAcademicData::scopeKrs($q)
+            ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status)))
+            ->with('krs.mahasiswa.programStudi')->orderBy('id')->paginate(20)->withQueryString();
+
+        return view('dashboard.admin-akademik.kelas-detail', compact('record', 'enrollments', 'participants', 'filters'));
     }
 
     public function create(): View
@@ -46,11 +57,14 @@ class AdminKelasKuliahController extends Controller
 
     public function edit(int $kelas_kuliah): View
     {
+        $this->config();
+
         return $this->form(OperationalAcademicData::classes()->findOrFail($kelas_kuliah));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->config();
         try {
             KelasKuliah::query()->create($this->values($request));
         } catch (QueryException $exception) {
@@ -62,6 +76,7 @@ class AdminKelasKuliahController extends Controller
 
     public function update(Request $request, int $kelas_kuliah): RedirectResponse
     {
+        $this->config();
         try {
             DB::transaction(function () use ($request, $kelas_kuliah): void {
                 $record = OperationalAcademicData::classes()->lockForUpdate()->findOrFail($kelas_kuliah);
@@ -88,6 +103,7 @@ class AdminKelasKuliahController extends Controller
 
     public function destroy(int $kelas_kuliah): RedirectResponse
     {
+        $this->config();
         try {
             DB::transaction(function () use ($kelas_kuliah): void {
                 $record = OperationalAcademicData::classes()->lockForUpdate()->findOrFail($kelas_kuliah);
@@ -112,7 +128,7 @@ class AdminKelasKuliahController extends Controller
             'kode_kelas' => ['required', 'string', 'max:20', 'not_regex:/^DEMO/i', Rule::unique('kelas_kuliah', 'kode_kelas')->where(fn ($q) => $q->where('mata_kuliah_id', $request->input('mata_kuliah_id'))->where('semester_id', $request->input('semester_id')))->ignore($record?->id)],
             'kapasitas' => ['nullable', 'integer', 'between:1,65535'],
             'ruang' => ['nullable', 'string', 'max:50'],
-        ]);
+        ], AdminAcademicData::messages(), ['mata_kuliah_id' => 'Mata kuliah', 'semester_id' => 'Semester', 'dosen_id' => 'Dosen', 'kode_kelas' => 'Kode kelas', 'kapasitas' => 'Kapasitas', 'ruang' => 'Ruang']);
         $values['dosen_id'] ??= null;
         $values['kapasitas'] ??= null;
         $values['ruang'] ??= null;
@@ -129,11 +145,20 @@ class AdminKelasKuliahController extends Controller
             'dosen_id' => OperationalAcademicData::lecturers()->where(fn ($q) => $q->where('aktif', true)->when($record?->dosen_id, fn ($d, $id) => $d->orWhere('id', $id)))->orderBy('nama')->pluck('nama', 'id')->all(),
         ];
 
+        if ($record && $record->krsDetails()->exists()) {
+            foreach (['mata_kuliah_id', 'semester_id', 'dosen_id', 'kode_kelas'] as $field) {
+                $config['fields'][$field]['locked'] = true;
+                $config['fields'][$field]['help'] = 'Identitas kelas dikunci karena sudah digunakan dalam KRS.';
+            }
+        }
+
         return view('dashboard.admin-akademik.resource-form', compact('config', 'record', 'options'));
     }
 
     private function config(): array
     {
+        abort_unless(app(AdminAcademicData::class)->available(), 503, 'Data administrasi akademik belum tersedia.');
+
         return [
             'label' => 'Kelas kuliah', 'title' => 'Kelas Kuliah', 'route' => 'dashboard.admin-akademik.kelas-kuliah', 'show' => true,
             'columns' => ['mataKuliah.kode' => 'Kode mata kuliah', 'mataKuliah.nama' => 'Nama mata kuliah', 'semester.kode' => 'Semester', 'kode_kelas' => 'Kelas', 'dosen.nama' => 'Dosen', 'kapasitas' => 'Kapasitas', 'ruang' => 'Ruang'],

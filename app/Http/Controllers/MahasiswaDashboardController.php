@@ -6,9 +6,11 @@ use App\Models\Kehadiran;
 use App\Models\Krs;
 use App\Models\Nilai;
 use App\Models\RekomendasiIntervensi;
+use App\Models\Semester;
 use App\Models\TindakLanjut;
 use App\Services\AcademicGradeSummary;
 use App\Services\MahasiswaOperationalData;
+use App\Services\OperationalAcademicData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -25,11 +27,16 @@ class MahasiswaDashboardController extends Controller
         $context = $this->data->context($request->user());
         $mahasiswa = $context['mahasiswa'];
         $semesterAktif = $this->data->activeSemester();
-        $canLoadKrs = $this->data->hasTables(['krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester']);
+        $canLoadKrs = $this->data->hasTables(['users', 'program_studi', 'dosen', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester']);
         $relations = ['semester', 'details.kelasKuliah.mataKuliah'];
 
         if (Schema::hasTable('nilai')) {
-            $relations[] = 'details.nilai';
+            $finalizationAvailable = Schema::hasColumn('nilai', 'final_at');
+            // Draft grades remain visible with an explicit status on the grades page,
+            // but must never contribute to published dashboard summaries or trends.
+            $relations['details.nilai'] = fn ($query) => $finalizationAvailable
+                ? $query->whereNotNull('final_at')
+                : $query->whereRaw('1 = 0');
         }
 
         if (Schema::hasTable('kehadiran')) {
@@ -40,13 +47,15 @@ class MahasiswaDashboardController extends Controller
             ? $this->data->krsQuery($mahasiswa->id)->with($relations)->get()
             : collect();
         $nilai = Schema::hasTable('nilai')
-            ? $krsRecords->flatMap(fn (Krs $krs) => $krs->details)
+            ? $krsRecords->where('status', 'disetujui')->flatMap(fn (Krs $krs) => $krs->details)
+                ->where('status', 'diambil')
                 ->map(fn ($detail) => $detail->nilai?->nilai_angka)
                 ->filter(fn ($value) => $value !== null)
                 ->values()
             : collect();
         $kehadiran = Schema::hasTable('kehadiran')
-            ? $krsRecords->flatMap(fn (Krs $krs) => $krs->details)->flatMap(fn ($detail) => $detail->kehadiran)
+            ? $krsRecords->where('status', 'disetujui')->flatMap(fn (Krs $krs) => $krs->details)
+                ->where('status', 'diambil')->flatMap(fn ($detail) => $detail->kehadiran)
             : collect();
         $attendanceSummary = $this->attendanceSummary($kehadiran);
         $activeKrs = $semesterAktif
@@ -58,12 +67,20 @@ class MahasiswaDashboardController extends Controller
                 ->filter(fn ($detail) => $detail->kelasKuliah?->mataKuliah !== null)
                 ->values()
             : collect();
-        $latestAnalysis = $mahasiswa && Schema::hasTable('analisis_risiko')
+        $latestAnalysis = $mahasiswa && $this->data->hasTables(['users', 'program_studi', 'analisis_risiko', 'semester'])
             ? $this->data->analysisQuery($mahasiswa->id)
                 ->orderByDesc('dianalisis_pada')->orderByDesc('id')->first()
             : null;
         $trend = $this->buildAcademicTrend($krsRecords);
         $gradeSummary = $mahasiswa ? $this->gradeSummary->forStudent($mahasiswa) : ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0];
+        $recommendationCount = $followUpCount = null;
+        if ($mahasiswa && $this->data->hasTables(['users', 'program_studi', 'faktor_risiko', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])) {
+            $recommendations = RekomendasiIntervensi::query()->whereHas('analisisRisiko', fn ($query) => $this->data->scopeAnalysis($query, $mahasiswa->id));
+            $recommendationCount = (clone $recommendations)->count();
+            if (Schema::hasTable('tindak_lanjut')) {
+                $followUpCount = TindakLanjut::query()->whereIn('rekomendasi_intervensi_id', $recommendations->select('rekomendasi_intervensi.id'))->count();
+            }
+        }
 
         return view('dashboard.mahasiswa.index', $context + [
             'semesterAktif' => $semesterAktif,
@@ -72,6 +89,10 @@ class MahasiswaDashboardController extends Controller
             'jumlahCatatanKehadiran' => $kehadiran->count(),
             'attendanceSummary' => $attendanceSummary,
             'jumlahMataKuliahAktif' => $activeCourses->count(),
+            'jumlahSksAktif' => $activeCourses->sum(fn ($detail) => (int) $detail->kelasKuliah->mataKuliah->sks),
+            'activeKrs' => $activeKrs,
+            'recommendationCount' => $recommendationCount,
+            'followUpCount' => $followUpCount,
             'analisisTerbaru' => $latestAnalysis,
             'grafik' => $trend,
             'gradeSummary' => $gradeSummary,
@@ -81,7 +102,7 @@ class MahasiswaDashboardController extends Controller
     public function krs(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $krs = $context['mahasiswa'] && $this->data->hasTables(['krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
+        $krs = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'dosen', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
             ? $this->data->krsQuery($context['mahasiswa']->id)
                 ->with(['semester', 'details.kelasKuliah.mataKuliah'])
                 ->orderByDesc('semester_id')->get()
@@ -93,15 +114,19 @@ class MahasiswaDashboardController extends Controller
     public function nilai(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $values = $context['mahasiswa'] && $this->data->hasTables(['nilai', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
+        $filterData = $this->semesterFilters($request);
+        $semesterId = $filterData['filters']['semester_id'] ?? null;
+        $values = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'dosen', 'nilai', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
             ? Nilai::query()
                 ->whereHas('krsDetail.krs', fn (Builder $query) => $this->data->scopeKrs($query, $context['mahasiswa']->id))
+                ->when($semesterId, fn ($query, $id) => $query->whereHas('krsDetail.krs', fn ($semester) => $semester->where('semester_id', $id)))
                 ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
-                ->orderByDesc('id')->get()
+                ->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return $this->feature('nilai', 'Nilai Akademik', $context + [
+        return $this->feature('nilai', 'Nilai Akademik', $context + $filterData + [
             'nilai' => $values,
+            'gradeSummary' => $context['mahasiswa'] ? $this->gradeSummary->forStudent($context['mahasiswa']) : ['ips' => null, 'ips_semester' => null, 'ipk' => null, 'final_count' => 0],
             'finalizationAvailable' => Schema::hasTable('nilai') && Schema::hasColumn('nilai', 'final_at'),
         ]);
     }
@@ -109,52 +134,75 @@ class MahasiswaDashboardController extends Controller
     public function kehadiran(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $records = $context['mahasiswa'] && $this->data->hasTables(['kehadiran', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
+        $filterData = $this->semesterFilters($request);
+        $semesterId = $filterData['filters']['semester_id'] ?? null;
+        $query = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'dosen', 'kehadiran', 'krs', 'krs_detail', 'kelas_kuliah', 'mata_kuliah', 'semester'])
             ? Kehadiran::query()
+                ->whereIn('krs_detail_id', OperationalAcademicData::approvedDetails()->select('krs_detail.id'))
                 ->whereHas('krsDetail.krs', fn (Builder $query) => $this->data->scopeKrs($query, $context['mahasiswa']->id))
+                ->when($semesterId, fn ($query, $id) => $query->whereHas('krsDetail.krs', fn ($semester) => $semester->where('semester_id', $id)))
                 ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
-                ->orderByDesc('tanggal')->orderByDesc('pertemuan_ke')->get()
-            : collect();
+                ->orderByDesc('tanggal')->orderByDesc('pertemuan_ke')->orderByDesc('id')
+            : null;
+        $summary = $this->attendanceSummary($query ? (clone $query)->withoutEagerLoads()->reorder()->get(['kehadiran.status']) : collect());
+        $records = $query ? $query->paginate(25)->withQueryString() : collect();
 
-        return $this->feature('kehadiran', 'Kehadiran', $context + ['kehadiran' => $records]);
+        return $this->feature('kehadiran', 'Kehadiran', $context + $filterData + ['kehadiran' => $records, 'attendanceSummary' => $summary]);
     }
 
     public function analisisRisiko(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $analyses = $context['mahasiswa'] && $this->data->hasTables(['analisis_risiko', 'faktor_risiko', 'semester'])
+        $filterData = $this->semesterFilters($request);
+        $semesterId = $filterData['filters']['semester_id'] ?? null;
+        $analyses = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'analisis_risiko', 'faktor_risiko', 'semester'])
             ? $this->data->analysisQuery($context['mahasiswa']->id)
+                ->when($semesterId, fn ($query, $id) => $query->where('semester_id', $id))
                 ->with(['semester', 'faktorRisiko' => fn ($query) => $query->orderByDesc('kontribusi')->orderBy('id')])
-                ->orderByDesc('dianalisis_pada')->orderByDesc('id')->get()
+                ->orderByDesc('dianalisis_pada')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return $this->feature('analisis-risiko', 'Analisis Risiko', $context + ['analyses' => $analyses]);
+        return $this->feature('analisis-risiko', 'Analisis Risiko', $context + $filterData + ['analyses' => $analyses]);
     }
 
     public function rekomendasi(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $recommendations = $context['mahasiswa'] && $this->data->hasTables(['rekomendasi_intervensi', 'analisis_risiko', 'semester'])
+        $filterData = $this->semesterFilters($request);
+        $semesterId = $filterData['filters']['semester_id'] ?? null;
+        $recommendations = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'faktor_risiko', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])
             ? RekomendasiIntervensi::query()
                 ->whereHas('analisisRisiko', fn (Builder $query) => $this->data->scopeAnalysis($query, $context['mahasiswa']->id))
+                ->when($semesterId, fn ($query, $id) => $query->whereHas('analisisRisiko', fn ($semester) => $semester->where('semester_id', $id)))
                 ->with(['analisisRisiko.semester', 'faktorRisiko'])
-                ->orderByDesc('created_at')->orderByDesc('id')->get()
+                ->orderByDesc('created_at')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return $this->feature('rekomendasi', 'Rekomendasi Intervensi', $context + ['recommendations' => $recommendations]);
+        // Legacy rows can point at a factor from a different analysis. Never
+        // disclose that factor's explanation through an otherwise owned result.
+        $recommendations->each(function ($item): void {
+            if ($item->faktorRisiko && (int) $item->faktorRisiko->analisis_risiko_id !== (int) $item->analisis_risiko_id) {
+                $item->setRelation('faktorRisiko', null);
+            }
+        });
+
+        return $this->feature('rekomendasi', 'Rekomendasi Intervensi', $context + $filterData + ['recommendations' => $recommendations]);
     }
 
     public function tindakLanjut(Request $request): View
     {
         $context = $this->data->context($request->user());
-        $followUps = $context['mahasiswa'] && $this->data->hasTables(['tindak_lanjut', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])
+        $filterData = $this->semesterFilters($request);
+        $semesterId = $filterData['filters']['semester_id'] ?? null;
+        $followUps = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'tindak_lanjut', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])
             ? TindakLanjut::query()
                 ->whereHas('rekomendasiIntervensi.analisisRisiko', fn (Builder $query) => $this->data->scopeAnalysis($query, $context['mahasiswa']->id))
+                ->when($semesterId, fn ($query, $id) => $query->whereHas('rekomendasiIntervensi.analisisRisiko', fn ($semester) => $semester->where('semester_id', $id)))
                 ->with('rekomendasiIntervensi.analisisRisiko.semester')
-                ->orderByDesc('dilakukan_pada')->orderByDesc('id')->get()
+                ->orderByDesc('dilakukan_pada')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return $this->feature('tindak-lanjut', 'Tindak Lanjut', $context + ['followUps' => $followUps]);
+        return $this->feature('tindak-lanjut', 'Tindak Lanjut', $context + $filterData + ['followUps' => $followUps]);
     }
 
     public function profil(Request $request): View
@@ -177,9 +225,21 @@ class MahasiswaDashboardController extends Controller
         return back()->with('status', 'Informasi kontak berhasil diperbarui.');
     }
 
+    private function semesterFilters(Request $request): array
+    {
+        $semesters = Schema::hasTable('semester')
+            ? Semester::query()->where('kode', 'not like', 'DEMO%')->orderByDesc('tahun_ajaran')->orderByDesc('periode')->get()
+            : collect();
+        $filters = $request->validate([
+            'semester_id' => ['nullable', 'integer', Rule::in($semesters->pluck('id')->all())],
+        ]);
+
+        return compact('semesters', 'filters');
+    }
+
     private function feature(string $view, string $title, array $data): View
     {
-        return view("dashboard.mahasiswa.{$view}", $data + ['pageTitle' => $title]);
+        return view("dashboard.mahasiswa.{$view}", $data + ['pageTitle' => $title, 'semesterAktif' => $this->data->activeSemester()]);
     }
 
     private function buildAcademicTrend(Collection $krsRecords): array
@@ -189,7 +249,8 @@ class MahasiswaDashboardController extends Controller
             ->sortBy(fn (Krs $krs) => sprintf('%s-%02d', $krs->semester->tahun_ajaran, $krs->semester->periode))
             ->map(function (Krs $krs): array {
                 $scores = Schema::hasTable('nilai')
-                    ? $krs->details->map(fn ($detail) => $detail->nilai?->nilai_angka)->filter(fn ($value) => $value !== null)
+                    ? $krs->details->filter(fn ($detail) => $krs->status === 'disetujui' && $detail->status === 'diambil')
+                        ->map(fn ($detail) => $detail->nilai?->nilai_angka)->filter(fn ($value) => $value !== null)
                     : collect();
 
                 return [

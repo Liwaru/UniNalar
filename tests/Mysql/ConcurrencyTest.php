@@ -4,6 +4,7 @@ namespace Tests\Mysql;
 
 use App\Models\KrsPengajuanRiwayat;
 use App\Models\Nilai;
+use App\Models\Semester;
 use App\Services\GradeEntryService;
 use App\Services\KrsSubmissionService;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +50,42 @@ class ConcurrencyTest extends MysqlTestCase
         }
 
         return array_column($results, 'status');
+    }
+
+    public function test_concurrent_semester_activation_preserves_existing_single_active_rule(): void
+    {
+        $d = MysqlFixtures::make();
+        $d['semester']->update(['aktif' => false]);
+        $codes = ['QA-RACE-SEM-A', 'QA-RACE-SEM-B'];
+        try {
+            $workers = [];
+            foreach ($codes as $index => $code) {
+                $workers[] = ['action' => 'semester-store', 'actor' => $d['admin']->id, 'values' => ['kode' => $code, 'tahun_ajaran' => (2037 + $index).'/'.(2038 + $index), 'periode' => 1, 'aktif' => 1]];
+            }
+            $statuses = $this->race($workers);
+            sort($statuses);
+            $this->assertSame(['ok', 'validation'], $statuses);
+            $this->assertSame(1, Semester::whereIn('kode', $codes)->where('aktif', true)->count());
+        } finally {
+            Semester::whereIn('kode', $codes)->update(['aktif' => false]);
+        }
+    }
+
+    public function test_capacity_reduction_racing_submission_never_overbooks(): void
+    {
+        $d = MysqlFixtures::make(2, 2);
+        MysqlFixtures::detail($d, 0);
+        app(KrsSubmissionService::class)->addClass($d['users'][1], $d['class']->id);
+        $values = $d['class']->only(['mata_kuliah_id', 'semester_id', 'dosen_id', 'kode_kelas', 'ruang']);
+        $statuses = $this->race([
+            ['action' => 'class-update', 'actor' => $d['admin']->id, 'id' => $d['class']->id, 'values' => $values + ['kapasitas' => 1]],
+            ['action' => 'submit', 'actor' => $d['users'][1]->id],
+        ]);
+        sort($statuses);
+        $this->assertSame(['ok', 'validation'], $statuses);
+        $reserved = DB::table('krs_detail')->join('krs', 'krs.id', '=', 'krs_detail.krs_id')
+            ->where('kelas_kuliah_id', $d['class']->id)->whereIn('krs.status', ['menunggu', 'disetujui'])->count();
+        $this->assertLessThanOrEqual($d['class']->fresh()->kapasitas, $reserved);
     }
 
     public function test_two_submissions_produce_one_version(): void

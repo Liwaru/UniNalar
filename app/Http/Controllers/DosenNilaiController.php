@@ -17,20 +17,25 @@ class DosenNilaiController extends Controller
     {
         $available = $this->finalization->workflowAvailable();
         $lecturer = $this->data->profile($request->user());
-        $classes = $lecturer && $available
-            ? $this->data->classes($lecturer)
-                ->with(['mataKuliah', 'semester', 'krsDetails' => fn ($details) => $details
-                    ->whereIn('id', $this->data->details($lecturer)->select('krs_detail.id'))
-                    ->with(['krs.mahasiswa', 'nilai'])])
-                ->orderByDesc('semester_id')->orderBy('mata_kuliah_id')->paginate(10)
+        $filterData = $this->data->filters($request, $lecturer);
+        $selectedClass = ! empty($filterData['filters']['kelas_id'])
+            ? $filterData['classOptions']->firstWhere('id', (int) $filterData['filters']['kelas_id'])
+            : $filterData['classOptions']->first();
+        $participants = $lecturer && $available && $selectedClass
+            ? $this->data->filterParticipants($this->data->details($lecturer)->where('kelas_kuliah_id', $selectedClass->id), $filterData['filters'], true)
+                ->with(['krs.mahasiswa', 'nilai'])->orderBy('id')->paginate(25)->appends(['kelas_id' => $selectedClass->id])->withQueryString()
             : collect();
+        $classes = $selectedClass && $available
+            ? collect([$selectedClass->setRelation('krsDetails', $participants->getCollection())]) : collect();
 
         return view('dashboard.dosen.nilai', [
             'lecturer' => $lecturer,
             'classes' => $classes,
             'available' => $available,
             'gradePoints' => config('academic.grade_points', []),
-        ]);
+            'participants' => $participants,
+            'selectedClass' => $selectedClass,
+        ] + $filterData);
     }
 
     public function save(Request $request, int $detail): RedirectResponse

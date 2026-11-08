@@ -82,8 +82,8 @@ class MahasiswaDashboardTest extends TestCase
             return KrsDetail::query()->create(['krs_id' => $krs->id, 'kelas_kuliah_id' => $class->id, 'status' => 'diambil']);
         });
 
-        Nilai::query()->create(['krs_detail_id' => $ownDetails[0]->id, 'nilai_angka' => 80, 'nilai_huruf' => 'A-', 'nilai_mutu' => 3.7]);
-        Nilai::query()->create(['krs_detail_id' => $ownDetails[1]->id, 'nilai_angka' => 90, 'nilai_huruf' => 'A', 'nilai_mutu' => 4]);
+        Nilai::query()->create(['krs_detail_id' => $ownDetails[0]->id, 'nilai_angka' => 80, 'nilai_huruf' => 'B', 'nilai_mutu' => 3, 'final_at' => now()]);
+        Nilai::query()->create(['krs_detail_id' => $ownDetails[1]->id, 'nilai_angka' => 90, 'nilai_huruf' => 'A', 'nilai_mutu' => 4, 'final_at' => now()]);
         foreach ($ownDetails as $index => $detail) {
             foreach (['hadir', $index === 0 ? 'hadir' : 'alpa'] as $meeting => $status) {
                 Kehadiran::query()->create([
@@ -352,7 +352,7 @@ class MahasiswaDashboardTest extends TestCase
                 ->assertDontSee('>Dashboard</a>', false);
 
             $activeLinks = substr_count($response->getContent(), 'aria-current="page"');
-            $expectedActiveLinks = $route === 'dashboard.mahasiswa' ? 0 : 1;
+            $expectedActiveLinks = 1;
             $this->assertSame($expectedActiveLinks, $activeLinks, "Unexpected active navigation items on {$route}.");
         }
 
