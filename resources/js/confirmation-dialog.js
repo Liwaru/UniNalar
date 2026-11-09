@@ -39,7 +39,7 @@ if (dialog && typeof dialog.showModal === 'function') {
         if (trigger && !trigger.disabled) open(form, trigger);
     }, true);
     document.addEventListener('click', (event) => {
-        const trigger = event.target.closest('[data-confirm-trigger]');
+        const trigger = event.target instanceof Element ? event.target.closest('[data-confirm-trigger]') : null;
         if (trigger && !trigger.disabled && trigger.form) open(trigger.form, trigger);
     });
     cancel.addEventListener('click', close);

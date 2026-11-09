@@ -29,7 +29,7 @@
                                     if ($value instanceof \DateTimeInterface) $value = $value->format('d/m/Y');
                                     if ($field === 'kapasitas' && $value === null) $value = 'Tanpa batas';
                                 @endphp
-                                <td>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
+                                <td @class(['academic-code' => in_array($field, ['kode', 'nidn', 'nim', 'kode_kelas', 'ruang', 'semester.kode', 'mataKuliah.kode'], true), 'academic-person' => in_array($field, ['nama', 'dosen.nama'], true) && in_array($config['route'], ['dashboard.admin-akademik.dosen', 'dashboard.admin-akademik.mahasiswa', 'dashboard.admin-akademik.kelas-kuliah'], true)])>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
                             @endforeach
                             <td><div class="admin-row-actions">
                                 @if ($config['show'] ?? false)<a class="admin-row-action" href="{{ route($config['route'].'.show', $record) }}">Detail</a>@endif

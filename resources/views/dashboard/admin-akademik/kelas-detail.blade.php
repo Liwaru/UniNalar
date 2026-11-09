@@ -10,8 +10,10 @@
             @endforeach
         </dl>
         <p>Identitas dan pengampu kelas dikunci setelah kelas digunakan dalam KRS.</p>
+        <nav class="detail-actions" aria-label="Navigasi kelas">
         <a class="admin-button" href="{{ route('dashboard.admin-akademik.kelas-kuliah.edit', $record) }}">Ubah kelas</a>
         <a class="admin-button secondary" href="{{ route('dashboard.admin-akademik.kelas-kuliah.index') }}">Kembali ke daftar</a>
+        </nav>
     </article>
     <section class="admin-panel"><h2 class="academic-card-title">Peserta dan pilihan KRS</h2>
         <form class="admin-search" method="GET" action="{{ url()->current() }}"><label class="admin-filter-field" for="roster-status"><span>Status KRS</span><select id="roster-status" name="status"><option value="">Semua</option>@foreach (['draft', 'menunggu', 'disetujui', 'ditolak'] as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst($status) }}</option>@endforeach</select></label><div class="filter-actions"><button class="admin-button" type="submit">Terapkan filter</button>@if (!empty($filters['status']))<x-filter-reset :href="url()->current()" />@endif</div>

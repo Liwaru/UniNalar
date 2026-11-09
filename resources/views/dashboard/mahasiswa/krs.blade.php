@@ -47,7 +47,7 @@
                     @else
                         <div class="empty-state mt-3"><strong>Kelas operasional belum tersedia</strong><span>Katalog kelas aktif untuk program studi Anda belum tercatat.</span></div>
                     @endif
-                    @if ($activeKrs?->details->isNotEmpty())<form method="POST" data-confirm-form inert action="{{ route('dashboard.mahasiswa.krs.submit') }}" class="mt-3">@csrf<x-confirm-action class="academic-action" title="Ajukan KRS?" description="Pilihan kelas akan dikirim ke Admin Akademik untuk ditinjau. Periksa kelas dan beban studi Anda." :record="$activeSemester->kode ?? 'Pilihan KRS Anda'" label="Ajukan KRS" /></form>@endif
+                    @if ($activeKrs?->details->isNotEmpty())<form method="POST" data-confirm-form inert action="{{ route('dashboard.mahasiswa.krs.submit') }}" class="mt-3">@csrf<x-confirm-action class="academic-action" title="Ajukan KRS?" description="Pilihan kelas akan dikirim ke Admin Akademik untuk ditinjau. Periksa kelas dan beban studi Anda." :record="$activeKrs->semester?->kode ?? 'Pilihan KRS Anda'" label="Ajukan KRS" /></form>@endif
                 @elseif ($activeKrs && $activeKrs->status === 'menunggu')
                     <p role="status">Pengajuan sedang menunggu keputusan Admin Akademik.</p>
                 @elseif ($activeKrs && $activeKrs->status === 'disetujui')
