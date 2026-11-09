@@ -1,9 +1,19 @@
-<form class="admin-search" method="GET" action="{{ url()->current() }}" aria-label="Filter monitoring">
+@php
+    $placeholder = match (true) {
+        request()->routeIs('dashboard.owner.dosen.*') => 'Cari nama dosen atau NIDN',
+        request()->routeIs('dashboard.owner.kelas.*') => 'Cari kelas atau mata kuliah',
+        request()->routeIs('dashboard.owner.laporan.*') => 'Cari kode atau nama program studi',
+        default => 'Cari nama atau NIM mahasiswa',
+    };
+@endphp
+<form class="admin-search owner-toolbar" method="GET" action="{{ url()->current() }}" aria-label="Filter monitoring">
     <label class="admin-filter-field" for="owner-program">Program studi<select name="program_studi_id" id="owner-program"><option value="">Semua program studi</option>@foreach($programs as $program)<option value="{{ $program->id }}" @selected((string)($filters['program_studi_id'] ?? '') === (string)$program->id)>{{ $program->nama }}</option>@endforeach</select></label>
     <label class="admin-filter-field" for="owner-semester">Semester<select name="semester_id" id="owner-semester"><option value="">Semua semester</option>@foreach($semesters as $semester)<option value="{{ $semester->id }}" @selected((string)($filters['semester_id'] ?? '') === (string)$semester->id)>{{ $semester->kode }}</option>@endforeach</select></label>
     @if($classFilter ?? false)<label class="admin-filter-field" for="owner-class">Kelas<select name="kelas_kuliah_id" id="owner-class"><option value="">Semua kelas</option>@foreach($classes as $class)<option value="{{ $class->id }}" @selected((string)($filters['kelas_kuliah_id'] ?? '') === (string)$class->id)>{{ $class->kode_kelas }} · {{ $class->mataKuliah->kode }} · {{ $class->semester->kode }}</option>@endforeach</select></label>@endif
     @if($statuses ?? [])<label class="admin-filter-field" for="owner-status">Status<select name="status" id="owner-status"><option value="">Semua status</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>@endforeach</select></label>@endif
-    @if($search ?? false)<label class="admin-filter-field" for="owner-search">Pencarian<input name="q" id="owner-search" value="{{ $filters['q'] ?? '' }}" maxlength="255" type="search"></label>@endif
-    <div class="filter-actions"><button class="admin-button" type="submit">Terapkan filter</button><x-filter-reset :href="url()->current()" />
-</div>
+    @if($search ?? false)<label class="admin-filter-field" for="owner-search">Pencarian<input name="q" id="owner-search" value="{{ $filters['q'] ?? '' }}" maxlength="255" type="search" placeholder="{{ $placeholder }}"></label>@endif
+    <div class="owner-toolbar-footer">
+        @if (isset($records) && $records !== null)<p class="owner-result-count" role="status"><strong>{{ number_format($records->total(), 0, ',', '.') }}</strong> catatan ditemukan</p>@else<span class="owner-result-count">Sesuai program studi dan semester pilihan</span>@endif
+        <div class="filter-actions"><x-filter-reset :href="url()->current()" /><button class="admin-button" type="submit">Terapkan filter</button></div>
+    </div>
 </form>

@@ -1,1 +1,2 @@
-<tr><td colspan="{{ $columns ?? 10 }}"><div class="admin-empty"><strong>Catatan tidak ditemukan</strong><span>Belum ada data operasional yang sesuai dengan pilihan filter.</span></div></td></tr>
+@php($hasFilters = count(array_filter($filters ?? [], fn ($value) => $value !== null && $value !== '')) > 0)
+<tr><td colspan="{{ $columns ?? 10 }}"><div class="admin-empty" role="status"><strong>{{ $hasFilters ? 'Tidak ada hasil sesuai filter' : 'Belum ada catatan' }}</strong><span>{{ $hasFilters ? 'Sesuaikan pilihan atau hapus filter untuk melihat catatan lainnya.' : 'Catatan akan tampil setelah tersedia dari pengelolaan akademik.' }}</span>@if ($hasFilters)<x-filter-reset :href="url()->current()" />@endif</div></td></tr>

@@ -1,4 +1,6 @@
 import './confirmation-dialog';
+import './admin-actions';
+import './owner-monitoring';
 
 // Enhance normal POST forms without changing their action, fields or CSRF handling.
 const pendingForms = new Map();

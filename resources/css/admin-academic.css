@@ -86,3 +86,70 @@
 
 /* Native selects with long option labels must not widen the form grid. */
 .admin-field > :is(input, select) { width: 100%; min-width: 0; }
+
+/* Targeted management screens; monitoring and other roles retain their layout. */
+.admin-page-actions { align-self: center; flex-shrink: 0; }
+.admin-management { padding: 0; overflow: hidden; }
+.admin-management form.admin-toolbar { margin: 0; padding: 20px; gap: 14px 16px; background: var(--un-color-background); border-bottom: 1px solid var(--un-color-divider); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-management form.admin-toolbar:not(:has(> label:nth-of-type(3))) { grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr); }
+.admin-toolbar-footer { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-result-count { margin: 0; color: var(--un-color-muted); font-size: var(--un-text-small); }
+.admin-result-count strong { color: var(--un-color-text); font-weight: 700; }
+.admin-toolbar-footer .filter-actions { display: flex; flex-wrap: nowrap; width: auto; gap: 12px; }
+.admin-toolbar-footer .filter-actions > :is(button, a, span) { width: auto; min-height: 44px; }
+.admin-toolbar-footer .filter-reset { padding: 8px 12px; }
+.admin-toolbar-footer .filter-reset[aria-disabled="true"] { opacity: .55; }
+.admin-management .admin-table-wrap { padding: 0 8px; }
+.admin-management .admin-table { min-width: 760px; }
+.admin-management .admin-table :is(th, td) { padding: 14px 12px; }
+.admin-management .admin-table thead th { padding-top: 12px; padding-bottom: 12px; background: var(--un-color-surface); }
+.admin-management .admin-table tbody tr:hover { background: var(--un-color-background); }
+.admin-management .admin-table td { word-break: normal; overflow-wrap: normal; }
+.admin-management .admin-table .academic-name { min-width: 22ch; font-weight: 600; color: var(--un-color-text); }
+.admin-management .admin-table :is(.academic-date, .academic-code, .academic-person) { white-space: nowrap; }
+.admin-management .admin-table .academic-date { min-width: 12ch; font-variant-numeric: tabular-nums; }
+.admin-management .admin-row-actions { gap: 8px; min-width: 204px; flex-wrap: nowrap; }
+.admin-management .admin-row-actions.is-compact { min-width: 120px; }
+.admin-action-options { display: flex; align-items: center; gap: 8px; }
+.admin-management .admin-row-action { min-height: 44px; padding: 8px 10px; border-color: transparent; background: transparent; }
+.admin-management .admin-row-actions > .admin-row-action:first-child { border-color: var(--un-color-border); background: var(--un-color-surface); }
+.admin-management .admin-row-action:hover { background: var(--un-color-neutral-soft); }
+.admin-management .admin-row-action.is-edit { color: var(--un-color-secondary); }
+.admin-management .admin-row-action.is-delete { color: var(--un-color-danger); }
+.admin-more-actions { min-width: 44px; font-size: 24px !important; }
+.admin-more-actions[hidden] { display: none; }
+.admin-action-options[popover] { position: fixed; inset: auto; margin: 0; width: 160px; padding: 6px; border: 1px solid var(--un-color-border); border-radius: var(--un-radius-control); background: var(--un-color-surface); color: var(--un-color-text); }
+.admin-action-options[popover]:popover-open { display: grid; gap: 4px; }
+.admin-action-options[popover]:not(:popover-open) { display: none; }
+.admin-action-options[popover] .admin-row-action { width: 100%; justify-content: flex-start; min-height: 44px; border-color: transparent; }
+.admin-action-options[popover] .is-edit { color: var(--un-color-secondary); }
+.admin-action-options[popover] .is-delete { color: var(--un-color-danger); }
+.admin-state { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: var(--un-text-caption); font-weight: 600; color: var(--un-color-secondary); background: var(--un-color-neutral-soft); white-space: nowrap; }
+.admin-state.is-active { color: var(--un-color-success); background: var(--un-color-success-bg); }
+.admin-management .admin-pagination { margin: 0; padding: 16px 20px; }
+.admin-management .admin-pagination:empty { display: none; }
+.admin-workflow-note { margin: 0; padding: 12px 20px; color: var(--un-color-muted); font-size: var(--un-text-small); border-bottom: 1px solid var(--un-color-divider); }
+.admin-summary .admin-metrics > div { padding: 12px 16px; border-left: 2px solid var(--un-color-divider); }
+.admin-summary .admin-metrics dd { margin-top: 6px; font-size: 28px; }
+.admin-summary .admin-krs-metric.is-menunggu { border-color: var(--un-color-warning); }
+.admin-summary .admin-krs-metric.is-disetujui { border-color: var(--un-color-success); }
+.admin-summary .admin-krs-metric.is-ditolak { border-color: var(--un-color-danger); }
+.admin-summary:has(.admin-krs-metric) .admin-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-quick-section > h2 { margin: 24px 0 12px; font-size: 16px; font-weight: 700; }
+.admin-quick-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.admin-quick-links a { justify-content: space-between; gap: 12px; min-height: 48px; padding: 10px 16px; border: 1px solid var(--un-color-divider); border-radius: var(--un-radius-control); background: var(--un-color-surface); color: var(--un-color-text); font-weight: 600; }
+.admin-quick-links a:hover { border-color: var(--un-color-primary); color: var(--un-color-primary); }
+@media (max-width: 1100px) {
+    .admin-management form.admin-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .admin-summary:has(.admin-krs-metric) .admin-metrics, .admin-quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    .admin-page-actions { align-self: flex-start; width: 100%; }
+    .admin-management form.admin-toolbar, .admin-management form.admin-toolbar:not(:has(> label:nth-of-type(3))) { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+    .admin-toolbar-footer { align-items: stretch; flex-direction: column; gap: 8px; }
+    .admin-toolbar-footer .filter-actions { justify-content: flex-end; }
+    .admin-management .admin-table-wrap { padding: 0 4px; }
+    .admin-management .admin-pagination { padding: 16px; }
+    .admin-summary .admin-metrics > div { padding: 8px 12px; }
+    .admin-quick-links { grid-template-columns: minmax(0, 1fr); }
+}

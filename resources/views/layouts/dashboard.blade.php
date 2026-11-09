@@ -52,6 +52,7 @@
                         <h1>@yield('page-title')</h1>
                         @hasSection('page-subtitle')<p>@yield('page-subtitle')</p>@endif
                     </div>
+                    @hasSection('page-actions')<div class="admin-page-actions">@yield('page-actions')</div>@endif
                     @if ($isStudent && isset($semesterAktif) && $semesterAktif)
                         <div class="semester-pill"><i aria-hidden="true"></i>{{ $semesterAktif->kode }}</div>
                     @endif

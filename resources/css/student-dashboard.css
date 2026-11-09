@@ -1,6 +1,7 @@
 @import './design-tokens.css';
 @import './scrollbars.css';
 @import './academic-ui.css';
+@import './owner-monitoring.css';
 @layer bootstrap, dashboard, tailwind-theme, tailwind-utilities;
 @import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
 @import "tailwindcss/theme.css" layer(tailwind-theme);

@@ -1,4 +1,4 @@
 @extends('dashboard.owner.layout')
 @section('monitoring')
-<p class="admin-intro">Program studi mengikuti mata kuliah kelas. Jumlah peserta mencakup seluruh mahasiswa resmi, termasuk mahasiswa lintas program.</p>@include('dashboard.owner.partials.class-table')
+@include('dashboard.owner.partials.class-table', ['classScopeNote' => 'Program studi mengikuti mata kuliah. Peserta resmi mencakup mahasiswa lintas program dengan KRS disetujui dan mata kuliah diambil; nilai final dibandingkan dengan seluruh peserta resmi.'])
 @endsection
