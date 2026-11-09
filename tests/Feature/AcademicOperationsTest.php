@@ -19,8 +19,11 @@ use App\Services\AcademicGradeSummary;
 use App\Services\GradeEntryService;
 use App\Services\GradeFinalizationService;
 use App\Services\KrsSubmissionService;
+use DOMDocument;
+use DOMXPath;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -58,12 +61,22 @@ class AcademicOperationsTest extends TestCase
 
     public function test_admin_class_crud_search_detail_and_krs_integration(): void
     {
+        Http::preventStrayRequests();
         $d = $this->data();
         $base = 'dashboard.admin-akademik.kelas-kuliah.';
+        $this->actingAs($d['admin'])->get(route($base.'index'))->assertOk()
+            ->assertViewHas('records', fn ($records) => $records->total() === 0 && $records->isEmpty())
+            ->assertSee('Data operasional belum tersedia.')
+            ->assertDontSee('Tidak ada data sesuai pilihan.');
         $this->actingAs($d['admin'])->post(route($base.'store'), $this->payload($d))->assertRedirect()->assertSessionHasNoErrors();
         $class = KelasKuliah::query()->firstOrFail();
         $this->get(route($base.'index', ['q' => 'TI101']))->assertOk()->assertSee('Basis Data Uji', false);
-        $this->get(route($base.'index', ['q' => 'tidak-ada']))->assertOk()->assertSee('Data operasional belum tersedia.');
+        $this->get(route($base.'index', ['q' => 'tidak-ada']))->assertOk()
+            ->assertViewHas('records', fn ($records) => $records->total() === 0 && $records->isEmpty())
+            ->assertSee('<strong>0</strong> kelas kuliah ditemukan', false)
+            ->assertSee('Tidak ada data sesuai pilihan.')
+            ->assertDontSee('Data operasional belum tersedia.')
+            ->assertDontSee('Basis Data Uji');
         $this->get(route($base.'show', $class))->assertOk()->assertSee('Dosen Pengampu Uji');
         $this->get(route($base.'edit', $class))->assertOk();
         $this->put(route($base.'update', $class), $this->payload($d) + [])->assertSessionHasNoErrors();
@@ -76,6 +89,7 @@ class AcademicOperationsTest extends TestCase
         $free = KelasKuliah::query()->create($this->payload($d, 'FREE'));
         $this->delete(route($base.'destroy', $free))->assertRedirect();
         $this->assertDatabaseMissing('kelas_kuliah', ['id' => $free->id]);
+        Http::assertNothingSent();
     }
 
     public function test_class_validation_and_every_admin_route_reject_wrong_roles(): void
@@ -174,6 +188,7 @@ class AcademicOperationsTest extends TestCase
 
     public function test_owner_and_lecturer_dashboards_aggregate_database_values_and_filter(): void
     {
+        Http::preventStrayRequests();
         $d = $this->data();
         $detail = $this->enrollment($d);
         $grade = Nilai::query()->create(['krs_detail_id' => $detail->id, 'nilai_angka' => 90, 'nilai_huruf' => 'A', 'nilai_mutu' => 4, 'final_at' => now()]);
@@ -182,12 +197,27 @@ class AcademicOperationsTest extends TestCase
         TindakLanjut::query()->create(['rekomendasi_intervensi_id' => $recommendation->id, 'status' => 'direncanakan']);
         $this->actingAs($d['lecturerUser'])->get(route('dashboard.dosen'))->assertOk()->assertViewHas('stats', fn ($s) => $s['students'] === 1 && $s['final'] === 1 && $s['pending'] === 0)->assertSee('Basis Data Uji');
         $owner = User::factory()->create(['level' => 4]);
-        $this->actingAs($owner)->get(route('dashboard.owner'))->assertOk()->assertViewHas('stats', fn ($s) => $s['students'] === 1 && $s['ipk'] === 4.0)->assertSee('rendah')->assertSee('direkomendasikan');
+        $response = $this->actingAs($owner)->get(route('dashboard.owner'))->assertOk()
+            ->assertViewHas('stats', fn ($s) => $s['students'] === 1 && $s['ipk'] === 4.0)
+            ->assertViewHas('recommendations', fn ($items) => $items->all() === ['direkomendasikan' => 1])
+            ->assertViewHas('riskDistribution', fn ($items) => $items->all() === ['rendah' => 1]);
+        $document = new DOMDocument;
+        $previousErrors = libxml_use_internal_errors(true);
+        try {
+            $this->assertTrue($document->loadHTML($response->getContent()));
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousErrors);
+        }
+        $xpath = new DOMXPath($document);
+        $this->assertSame(1, $xpath->query('//section[h3[normalize-space(.)="Rekomendasi tercatat"]]/dl/div[dt/span[normalize-space(.)="Direkomendasikan"] and dd[normalize-space(.)="1"]]')->length);
+        $this->assertSame(1, $xpath->query('//section[h3[normalize-space(.)="Risiko dari analisis terbaru per mahasiswa"]]/dl/div[dt/span[normalize-space(.)="Rendah"] and dd[normalize-space(.)="1"]]')->length);
         $other = ProgramStudi::query()->create(['kode' => 'CS', 'nama' => 'Cyber Security', 'jenjang' => 'S1']);
         $this->get(route('dashboard.owner', ['program_studi_id' => $other->id]))->assertOk()->assertSee('Data operasional belum tersedia');
         $this->get(route('dashboard.owner', ['semester_id' => 999]))->assertSessionHasErrors('semester_id');
         $this->actingAs($d['lecturerUser'])->get(route('dashboard.owner'))->assertForbidden();
         $this->assertDatabaseCount('analisis_risiko', 1);
+        Http::assertNothingSent();
     }
 
     public function test_known_dummy_provenance_and_demo_accounts_cannot_leak_into_operational_views(): void

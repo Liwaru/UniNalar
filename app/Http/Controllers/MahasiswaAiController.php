@@ -24,7 +24,7 @@ final class MahasiswaAiController extends Controller
         } catch (DomainException $e) {
             return back()->withErrors(['ai' => $e->getMessage()]);
         } catch (\RuntimeException) {
-            return back()->withErrors(['ai' => 'Environment analisis belum terverifikasi. Hubungi pengelola.']);
+            return back()->withErrors(['ai' => 'Analisis sementara tidak tersedia. Periksa riwayat sebelum mencoba lagi; permintaan tidak diulang otomatis.']);
         }
 
         return redirect()->route('dashboard.mahasiswa.analisis-risiko', ['semester_id' => $validated['semester_id']])

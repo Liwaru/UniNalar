@@ -4,18 +4,15 @@
 @section('page-subtitle', 'Riwayat analisis dan faktor penjelas yang tersimpan.')
 @section('content')
     @php
-        $analysisEnabled = app()->environment(['local', 'testing'])
-            && config('services.groq.live_enabled') && $mahasiswa
-            && (bool) config('services.groq.key')
-            && config('services.groq.base_url') === 'https://api.groq.com/openai/v1'
-            && config('services.groq.model') === 'openai/gpt-oss-20b';
+        $aiReadiness = app(\App\Services\GroqLivePolicy::class)->readiness($mahasiswa);
+        $analysisEnabled = $aiReadiness['enabled'];
     @endphp
     @include('dashboard.mahasiswa.partials.semester-filter')
     <section class="student-section" aria-labelledby="ai-analysis-title">
         <h2 id="ai-analysis-title">Penjelasan indikator akademik</h2>
         <p>AI membantu menjelaskan indikator dan menyarankan langkah belajar. Hasilnya dapat keliru dan bukan skor, kategori risiko resmi, atau keputusan akademik.</p>
         @if (session('status'))<p role="status">{{ session('status') }}</p>@endif
-        @unless ($analysisEnabled)<p class="data-meta">Analisis baru belum diaktifkan. Riwayat tetap dapat dibaca.</p>@endunless
+        <p class="data-meta" role="status" data-ai-readiness>{{ $aiReadiness['message'] }}</p>
         <form method="POST" action="{{ route('dashboard.mahasiswa.analisis-risiko.ai') }}" class="student-ai-form" data-ai-analysis data-ai-enabled="{{ $analysisEnabled ? 'true' : 'false' }}">
             @csrf
             <label for="ai-semester">Semester analisis</label>
@@ -25,7 +22,7 @@
             </select>
             <label for="ai-consent"><input id="ai-consent" type="checkbox" name="persetujuan" value="1" required> Saya mengizinkan pengiriman indikator agregat tanpa identitas ke layanan AI untuk analisis ini.</label>
             <button type="submit" @disabled(!$analysisEnabled)>Jelaskan indikator</button>
-            <p class="data-meta" data-ai-status role="status">Hasil tersimpan digunakan kembali bila indikator tidak berubah. Akses development dibatasi pada data sintetis.</p>
+            <p class="data-meta" data-ai-status role="status">Hasil dengan asal yang sesuai digunakan kembali bila indikator tidak berubah. Riwayat tetap tersedia ketika analisis baru dinonaktifkan.</p>
         </form>
     </section>
     <section class="student-card analysis-chart-panel" aria-labelledby="analysis-history-title">

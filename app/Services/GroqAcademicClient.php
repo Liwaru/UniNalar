@@ -11,18 +11,12 @@ final class GroqAcademicClient
 {
     public function describe(array $indicators): array
     {
-        if (! app()->environment('testing') && ! config('services.groq.live_enabled')) {
-            throw new DomainException('Permintaan AI nyata belum diizinkan.');
-        }
+        app(GroqLivePolicy::class)->assertProvider();
         if (app()->environment('testing')) {
             Http::preventStrayRequests();
         }
-        $base = rtrim((string) config('services.groq.base_url'), '/');
+        $base = config('services.groq.base_url');
         $model = config('services.groq.model');
-        if ($base !== 'https://api.groq.com/openai/v1' || ! is_string($model) || ! preg_match('/^[a-zA-Z0-9_\/.\-]{1,50}$/', $model)
-            || ! config('services.groq.key')) {
-            throw new DomainException('Konfigurasi layanan AI belum siap.');
-        }
         try {
             $response = Http::withToken(config('services.groq.key'))->acceptJson()
                 ->connectTimeout(5)->timeout(25)->withoutRedirecting()
@@ -63,6 +57,6 @@ final class GroqAcademicClient
             $usage[$key] = is_int($value) && $value >= 0 && $value <= 1000000 ? $value : null;
         }
 
-        return $result + ['usage' => $usage, 'transport' => app()->environment('testing') || config('services.groq.mocked', false) ? 'mock' : 'live'];
+        return $result + ['usage' => $usage, 'transport' => app(GroqLivePolicy::class)->transport()];
     }
 }

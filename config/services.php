@@ -5,7 +5,16 @@ return [
         'key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_MODEL', 'openai/gpt-oss-20b'),
         'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1'),
-        'live_enabled' => (bool) env('GROQ_LIVE_ENABLED', false),
+        'live_enabled' => filter_var(env('GROQ_LIVE_ENABLED', false), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+        'demo' => [
+            'enabled' => filter_var(env('GROQ_DEMO_ENABLED', false), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            'mode' => env('GROQ_DEMO_MODE', ''),
+            'environments' => array_filter(array_map('trim', explode(',', (string) env('GROQ_DEMO_ENVIRONMENTS', '')))),
+            'database' => env('GROQ_DEMO_DATABASE', ''),
+            'user_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('GROQ_DEMO_USER_IDS', ''))))),
+            'global_limit' => env('GROQ_DEMO_GLOBAL_LIMIT', 0),
+            'user_limit' => env('GROQ_DEMO_USER_LIMIT', 0),
+        ],
     ],
 
     /*
