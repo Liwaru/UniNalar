@@ -1,11 +1,13 @@
+@import './design-tokens.css';
+@import './scrollbars.css';
 :root {
     color-scheme: light;
-    --login-navy: #14213d;
-    --login-blue: #2563eb;
+    --login-navy: var(--un-color-text);
+    --login-blue: var(--un-color-primary);
     --login-teal: #14b8a6;
     --login-surface: #eaf2ff;
-    --login-muted: #526178;
-    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --login-muted: var(--un-color-muted);
+    font-family: var(--un-font-sans);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -25,7 +27,7 @@ body.login-page {
     margin: 0;
     padding: 16px;
     color: var(--login-navy);
-    background: #f8fafc;
+    background: var(--un-color-background);
 }
 
 .login-shell {
@@ -36,7 +38,7 @@ body.login-page {
     overflow: hidden;
     border: 1px solid rgba(20, 33, 61, .06);
     border-radius: 22px;
-    background: #fff;
+    background: var(--un-color-surface);
     box-shadow: none;
 }
 
@@ -47,7 +49,7 @@ body.login-page {
     flex-direction: column;
     overflow: hidden;
     padding: 30px 52px 22px;
-    color: #fff;
+    color: var(--un-color-surface);
     background: var(--login-navy);
 }
 
@@ -76,12 +78,22 @@ body.login-page {
 }
 
 .login-brand {
+    position: relative;
     width: fit-content;
     display: inline-flex;
     align-items: center;
-    padding: 5px 12px;
-    border-radius: 10px;
-    background: #fff;
+}
+
+/* Reuse the original transparent wordmark silhouette; keep the blue/cyan icon intact. */
+.login-brand::after {
+    position: absolute;
+    inset: 0;
+    background: var(--un-color-surface);
+    mask: url('/images/UniNalar Sidebar.png') center / contain no-repeat;
+    /* The original asset has a transparent gap between the icon and wordmark. */
+    clip-path: inset(0 0 0 32%);
+    pointer-events: none;
+    content: '';
 }
 
 .login-brand img {
@@ -102,7 +114,7 @@ body.login-page {
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     font-weight: 800;
     letter-spacing: .13em;
 }
@@ -121,7 +133,7 @@ body.login-page {
 
 .brand-copy h1 {
     margin: 13px 0 10px;
-    color: #fff;
+    color: var(--un-color-surface);
     font-size: clamp(34px, 3.1vw, 43px);
     font-weight: 800;
     letter-spacing: -.055em;
@@ -136,7 +148,7 @@ body.login-page {
     max-width: 435px;
     margin: 0;
     color: #c0ccdc;
-    font-size: 13px;
+    font-size: var(--un-text-body);
     line-height: 1.7;
 }
 
@@ -181,7 +193,7 @@ body.login-page {
     transform: translate(-50%, -50%);
     border: 1px solid rgba(255, 255, 255, .22);
     border-radius: 19px;
-    color: #fff;
+    color: var(--un-color-surface);
     background: #167b87;
     box-shadow: none;
 }
@@ -227,7 +239,7 @@ body.login-page {
     justify-content: center;
     gap: 11px;
     color: #a9b8cc;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     font-weight: 700;
     letter-spacing: .12em;
 }
@@ -242,14 +254,14 @@ body.login-page {
 .brand-footnote {
     margin: 12px 0 0;
     color: #8191a8;
-    font-size: 12px;
+    font-size: var(--un-text-small);
 }
 
 .login-form-panel {
     display: grid;
     place-items: center;
     padding: 36px 54px;
-    background: #fff;
+    background: var(--un-color-surface);
 }
 
 .login-form-wrap {
@@ -259,7 +271,7 @@ body.login-page {
 
 .form-kicker {
     color: var(--login-blue);
-    font-size: 12px;
+    font-size: var(--un-text-small);
 }
 
 .login-form-wrap h2 {
@@ -273,7 +285,7 @@ body.login-page {
 .form-description {
     margin: 0;
     color: var(--login-muted);
-    font-size: 12px;
+    font-size: var(--un-text-small);
 }
 
 .form-alert {
@@ -284,9 +296,9 @@ body.login-page {
     padding: 12px 14px;
     border: 1px solid #fecaca;
     border-radius: 10px;
-    color: #991b1b;
-    background: #fef2f2;
-    font-size: 12px;
+    color: var(--un-color-danger);
+    background: var(--un-color-danger-bg);
+    font-size: var(--un-text-small);
     line-height: 1.6;
 }
 
@@ -316,51 +328,51 @@ body.login-page {
 
 .form-field > label {
     color: #34435a;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     font-weight: 700;
 }
 
 .form-field input {
     width: 100%;
-    height: 46px;
+    height: var(--un-control-height);
     padding: 0 14px;
-    border: 1px solid #dce3ed;
-    border-radius: 9px;
+    border: 1px solid var(--un-color-border);
+    border-radius: var(--un-radius-control);
     outline: none;
     color: var(--login-navy);
-    background: #fff;
+    background: var(--un-color-surface);
     font: inherit;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     transition: border-color .16s ease, box-shadow .16s ease;
 }
 
-.form-field input::placeholder { color: #64748b; }
+.form-field input::placeholder { color: var(--un-color-muted); }
 .form-field input:hover { border-color: #c3cedd; }
 .form-field input:focus { border-color: var(--login-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
-.form-field input[aria-invalid="true"] { border-color: #dc2626; }
+.form-field input[aria-invalid="true"] { border-color: var(--un-color-danger); }
 
 .password-control { position: relative; }
-.password-control > input { padding-right: 48px; }
+.password-control > input { padding-right: calc(var(--un-control-height) + var(--un-space-3)); }
 
 .password-toggle {
     position: absolute;
     top: 50%;
     right: 7px;
-    width: 36px;
-    height: 36px;
+    width: var(--un-control-height);
+    height: var(--un-control-height);
     display: grid;
     place-items: center;
     transform: translateY(-50%);
     padding: 0;
     border: 0;
     border-radius: 7px;
-    color: #526178;
+    color: var(--un-color-muted);
     background: transparent;
     cursor: pointer;
 }
 
 .password-toggle:hover,
-.password-toggle:focus-visible { color: var(--login-blue); background: #f1f5fb; outline: none; }
+.password-toggle:focus-visible { color: var(--login-blue); background: #f1f5fb; }
 .password-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
 .password-toggle .eye-slash { display: none; }
 .password-toggle[aria-pressed="true"] .eye-slash { display: block; }
@@ -377,8 +389,8 @@ body.login-page {
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    color: #56647a;
-    font-size: 12px;
+    color: var(--un-color-muted);
+    font-size: var(--un-text-small);
     cursor: pointer;
 }
 
@@ -394,15 +406,15 @@ body.login-page {
     height: 16px;
     display: grid;
     place-items: center;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--un-color-border);
     border-radius: 4px;
-    background: #fff;
+    background: var(--un-color-surface);
     transition: border-color .15s ease, background .15s ease;
 }
 
-.remember-option input:focus-visible + .custom-checkbox { outline: 3px solid rgba(37, 99, 235, .18); }
+.remember-option input:focus-visible + .custom-checkbox { outline: 3px solid var(--login-blue); outline-offset: 3px; }
 .remember-option input:checked + .custom-checkbox { border-color: var(--login-blue); background: var(--login-blue); }
-.remember-option input:checked + .custom-checkbox::after { width: 7px; height: 4px; transform: rotate(-45deg) translateY(-1px); border-bottom: 1.5px solid #fff; border-left: 1.5px solid #fff; content: ''; }
+.remember-option input:checked + .custom-checkbox::after { width: 7px; height: 4px; transform: rotate(-45deg) translateY(-1px); border-bottom: 1.5px solid var(--un-color-surface); border-left: 1.5px solid var(--un-color-surface); content: ''; }
 
 .help-link {
     padding: 3px 0;
@@ -410,38 +422,37 @@ body.login-page {
     color: var(--login-blue);
     background: transparent;
     font: inherit;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     font-weight: 700;
     cursor: pointer;
 }
 
 .help-link:hover,
-.help-link:focus-visible { color: #1d4ed8; text-decoration: underline; outline: none; }
+.help-link:focus-visible { color: var(--un-color-primary-hover); text-decoration: underline; }
 
 .submit-button {
     width: 100%;
-    height: 46px;
+    height: var(--un-control-height);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 4px;
     padding: 0 17px;
     border: 0;
-    border-radius: 9px;
-    color: #fff;
+    border-radius: var(--un-radius-control);
+    color: var(--un-color-surface);
     background: var(--login-blue);
     box-shadow: none;
     font: inherit;
-    font-size: 12px;
+    font-size: var(--un-text-small);
     font-weight: 700;
     cursor: pointer;
     transition: background .16s ease, box-shadow .16s ease, transform .16s ease;
 }
 
-.submit-button:hover { background: #1d4ed8; box-shadow: none; }
-.submit-button:focus-visible { outline: 3px solid rgba(37, 99, 235, .22); outline-offset: 3px; }
-.field-error { color: #b91c1c; font-size: 12px; }
-.account-note { margin: 18px 0 0; color: #526178; font-size: 12px; text-align: center; }
+.submit-button:hover { background: var(--un-color-primary-hover); box-shadow: none; }
+.submit-button:focus-visible { outline: 3px solid var(--login-blue); outline-offset: 3px; }
+.account-note { margin: 18px 0 0; color: var(--un-color-muted); font-size: var(--un-text-small); text-align: center; }
 
 .help-dialog {
     width: min(440px, calc(100% - 40px));
@@ -449,18 +460,18 @@ body.login-page {
     border: 1px solid #e5eaf1;
     border-radius: 16px;
     color: var(--login-navy);
-    background: #fff;
-    box-shadow: 0 24px 70px rgba(20, 33, 61, .22);
+    background: var(--un-color-surface);
+    box-shadow: 0 12px 32px rgba(20, 33, 61, .14);
 }
 
 .help-dialog::backdrop { background: rgba(20, 33, 61, .42);  }
 .help-dialog-content { position: relative; padding: 31px; }
-.dialog-close { position: absolute; top: 12px; right: 13px; width: 32px; height: 32px; border: 0; border-radius: 8px; color: #68768b; background: transparent; font-size: 23px; cursor: pointer; }
-.dialog-close:hover { color: var(--login-navy); background: #f1f5f9; }
+.dialog-close { position: absolute; top: 12px; right: 13px; width: var(--un-control-height); height: var(--un-control-height); border: 0; border-radius: 8px; color: #68768b; background: transparent; font-size: 23px; cursor: pointer; }
+.dialog-close:hover { color: var(--login-navy); background: var(--un-color-neutral-soft); }
 .help-dialog-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; color: #0f766e; background: #e5f8f5; font-size: 19px; font-weight: 800; }
 .help-dialog h2 { margin: 17px 0 8px; font-size: 20px; letter-spacing: -.03em; }
-.help-dialog p { margin: 0; color: #526178; font-size: 12px; line-height: 1.8; }
-.dialog-confirm { min-width: 104px; height: 39px; margin-top: 22px; padding: 0 16px; border: 0; border-radius: 8px; color: #fff; background: var(--login-blue); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.help-dialog p { margin: 0; color: var(--un-color-muted); font-size: var(--un-text-small); line-height: 1.8; }
+.dialog-confirm { min-width: 104px; height: var(--un-control-height); margin-top: 22px; padding: 0 16px; border: 0; border-radius: var(--un-radius-control); color: var(--un-color-surface); background: var(--login-blue); font: inherit; font-size: var(--un-text-small); font-weight: 700; cursor: pointer; }
 
 @media (max-width: 991.98px) {
     .login-brand-panel, .login-form-panel { padding: 28px; min-width: 0; }
@@ -476,10 +487,21 @@ body.login-page {
     .login-brand img { width: 160px; max-width: 100%; }
     .brand-copy { margin-top: 18px; }
     .brand-copy h1 { font-size: 27px; }
-    .brand-copy > p { font-size: 12px; }
+    .brand-copy > p { font-size: var(--un-text-small); }
     .academic-visual, .brand-footnote { display: none; }
     .login-form-wrap h2 { font-size: 27px; }
     .form-field input { font-size: 16px; }
     .form-options { flex-wrap: wrap; gap: 12px; }
 }
 
+/* Keyboard focus is consistent across the login form and its help dialog. */
+.login-page :is(a, button, input):focus-visible { outline: 3px solid var(--login-blue); outline-offset: 3px; }
+
+/* Submission feedback keeps a stable line below the primary action. */
+.submission-status { min-height: 1.5em; margin: 8px 0 0; color: var(--un-color-muted); font-size: var(--un-text-body); }
+.submit-button:disabled { cursor: wait; background: var(--un-color-disabled); color: var(--un-color-muted); }
+
+.remember-option, .help-link { min-height: var(--un-control-height); }
+@media (prefers-reduced-motion: reduce) {
+    .login-page :is(input, button, a, .custom-checkbox) { transition: none; }
+}

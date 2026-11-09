@@ -33,6 +33,6 @@ class FinalSystemSecurityTest extends TestCase
                 $checked++;
             }
         }
-        $this->assertSame(84, $checked);
+        $this->assertSame(85, $checked);
     }
 }

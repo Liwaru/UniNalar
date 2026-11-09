@@ -1,0 +1,51 @@
+/* UniNalar identity and semantic tokens shared by public and academic pages. */
+:root {
+    --un-font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --un-color-primary: #2563eb;
+    --un-color-primary-hover: #1d4ed8;
+    --un-color-secondary: #334155;
+    --un-color-background: #f8fafc;
+    --un-color-surface: #fff;
+    --un-color-text: #14213d;
+    --un-color-muted: #526178;
+    --un-color-border: #cbd5e1;
+    --un-color-divider: #e7edf3;
+    --un-color-success: #087a65;
+    --un-color-success-bg: #e7f8f3;
+    --un-color-warning: #906113;
+    --un-color-warning-bg: #fff4df;
+    --un-color-danger: #b42318;
+    --un-color-danger-bg: #fff0ee;
+    --un-color-focus: #2563eb;
+    --un-color-disabled: #e2e8f0;
+    --un-color-primary-soft: #edf4ff;
+    --un-color-neutral-soft: #f1f5f9;
+    --un-chart-fill: rgba(37, 99, 235, .1);
+    --un-text-body: 14px;
+    --un-text-small: 13px;
+    --un-text-caption: 12px;
+    --un-text-title: 26px;
+    --un-line-body: 1.6;
+    --un-radius-control: 8px;
+    --un-radius-panel: 12px;
+    --un-control-height: 44px;
+    --un-space-1: 4px;
+    --un-space-2: 8px;
+    --un-space-3: 12px;
+    --un-space-4: 16px;
+    --un-space-5: 20px;
+    --un-space-6: 24px;
+    --un-space-8: 32px;
+    /* Bootstrap body declarations must inherit the same identity as custom CSS. */
+    --bs-body-font-family: var(--un-font-sans);
+    --bs-body-font-size: var(--un-text-body);
+    --bs-body-line-height: var(--un-line-body);
+    --bs-body-color: var(--un-color-text);
+    --bs-body-bg: var(--un-color-background);
+}
+
+:where(.landing-page, .login-page, .student-dashboard) {
+    font-family: var(--un-font-sans);
+    font-size: var(--un-text-body);
+    line-height: var(--un-line-body);
+}

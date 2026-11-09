@@ -9,7 +9,7 @@
         : mb_substr($displayUserLabel, 0, 1);
 @endphp
 
-<aside class="student-sidebar" data-role="{{ $roleSlug }}" aria-label="Navigasi {{ $roleLabel }}">
+<aside class="student-sidebar" data-role="{{ $roleSlug }}" aria-label="Navigasi {{ $roleLabel }}" tabindex="0">
     <a class="student-brand" href="{{ route('dashboard') }}" aria-label="UniNalar, Dashboard sesuai role">
         <img src="{{ asset('images/UniNalar Icon.png') }}" alt="" width="35" height="35">
         <div><strong>UniNalar</strong><span>Ruang {{ $roleLabel }}</span></div>

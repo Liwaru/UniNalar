@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnalisisRisiko;
 use App\Models\Kehadiran;
 use App\Models\Krs;
 use App\Models\Nilai;
@@ -158,11 +159,14 @@ class MahasiswaDashboardController extends Controller
         $analyses = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'analisis_risiko', 'faktor_risiko', 'semester'])
             ? $this->data->analysisQuery($context['mahasiswa']->id)
                 ->when($semesterId, fn ($query, $id) => $query->where('semester_id', $id))
-                ->with(['semester', 'faktorRisiko' => fn ($query) => $query->orderByDesc('kontribusi')->orderBy('id')])
+                ->with(['semester', 'rekomendasiIntervensi', 'faktorRisiko' => fn ($query) => $query->orderByDesc('kontribusi')->orderBy('id')])
                 ->orderByDesc('dianalisis_pada')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return $this->feature('analisis-risiko', 'Analisis Risiko', $context + $filterData + ['analyses' => $analyses]);
+        return $this->feature('analisis-risiko', 'Analisis Risiko', $context + $filterData + [
+            'analyses' => $analyses,
+            'academicHistory' => $context['mahasiswa'] ? $this->gradeSummary->historyForStudent($context['mahasiswa']) : collect(),
+        ]);
     }
 
     public function rekomendasi(Request $request): View
@@ -170,13 +174,29 @@ class MahasiswaDashboardController extends Controller
         $context = $this->data->context($request->user());
         $filterData = $this->semesterFilters($request);
         $semesterId = $filterData['filters']['semester_id'] ?? null;
-        $recommendations = $context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'faktor_risiko', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])
-            ? RekomendasiIntervensi::query()
-                ->whereHas('analisisRisiko', fn (Builder $query) => $this->data->scopeAnalysis($query, $context['mahasiswa']->id))
-                ->when($semesterId, fn ($query, $id) => $query->whereHas('analisisRisiko', fn ($semester) => $semester->where('semester_id', $id)))
-                ->with(['analisisRisiko.semester', 'faktorRisiko'])
-                ->orderByDesc('created_at')->orderByDesc('id')->paginate(25)->withQueryString()
-            : collect();
+        $analysisPages = null;
+        $recommendationTotals = collect();
+        if ($context['mahasiswa'] && $this->data->hasTables(['users', 'program_studi', 'faktor_risiko', 'rekomendasi_intervensi', 'analisis_risiko', 'semester'])) {
+            $query = $this->data->scopeAnalysis(AnalisisRisiko::query(), $context['mahasiswa']->id)
+                ->when($semesterId, fn ($q, $id) => $q->where('analisis_risiko.semester_id', $id))
+                ->whereHas('rekomendasiIntervensi');
+            $recommendationTotals = (clone $query)
+                ->join('rekomendasi_intervensi as grouped_recommendations', 'grouped_recommendations.analisis_risiko_id', '=', 'analisis_risiko.id')
+                ->select('analisis_risiko.semester_id')
+                ->selectRaw('COUNT(DISTINCT analisis_risiko.id) as analysis_count, COUNT(grouped_recommendations.id) as recommendation_count')
+                ->groupBy('analisis_risiko.semester_id')->get()
+                ->keyBy(fn ($row) => $row->semester_id ?? 'unassigned');
+            // Paginate whole analyses: recommendations from one analysis stay together.
+            $analysisPages = (clone $query)
+                ->leftJoin('semester as recommendation_period', 'recommendation_period.id', '=', 'analisis_risiko.semester_id')
+                ->select('analisis_risiko.*')
+                ->with(['semester', 'rekomendasiIntervensi' => fn ($q) => $q->orderBy('id'), 'rekomendasiIntervensi.faktorRisiko'])
+                ->orderByRaw('CASE WHEN analisis_risiko.semester_id IS NULL THEN 1 ELSE 0 END')
+                ->orderByDesc('recommendation_period.tahun_ajaran')->orderByDesc('recommendation_period.periode')
+                ->orderByDesc('analisis_risiko.dianalisis_pada')->orderByDesc('analisis_risiko.id')
+                ->paginate(25)->withQueryString();
+        }
+        $recommendations = $analysisPages ? $analysisPages->getCollection()->flatMap->rekomendasiIntervensi : collect();
 
         // Legacy rows can point at a factor from a different analysis. Never
         // disclose that factor's explanation through an otherwise owned result.
@@ -186,7 +206,12 @@ class MahasiswaDashboardController extends Controller
             }
         });
 
-        return $this->feature('rekomendasi', 'Rekomendasi Intervensi', $context + $filterData + ['recommendations' => $recommendations]);
+        $recommendationGroups = $analysisPages
+            ? $analysisPages->getCollection()->groupBy(fn ($analysis) => $analysis->semester_id ?? 'unassigned')
+            : collect();
+
+        return $this->feature('rekomendasi', 'Rekomendasi Intervensi', $context + $filterData
+            + compact('recommendations', 'analysisPages', 'recommendationGroups', 'recommendationTotals'));
     }
 
     public function tindakLanjut(Request $request): View

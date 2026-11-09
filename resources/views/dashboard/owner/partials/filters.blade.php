@@ -4,5 +4,6 @@
     @if($classFilter ?? false)<label class="admin-filter-field" for="owner-class">Kelas<select name="kelas_kuliah_id" id="owner-class"><option value="">Semua kelas</option>@foreach($classes as $class)<option value="{{ $class->id }}" @selected((string)($filters['kelas_kuliah_id'] ?? '') === (string)$class->id)>{{ $class->kode_kelas }} · {{ $class->mataKuliah->kode }} · {{ $class->semester->kode }}</option>@endforeach</select></label>@endif
     @if($statuses ?? [])<label class="admin-filter-field" for="owner-status">Status<select name="status" id="owner-status"><option value="">Semua status</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>@endforeach</select></label>@endif
     @if($search ?? false)<label class="admin-filter-field" for="owner-search">Pencarian<input name="q" id="owner-search" value="{{ $filters['q'] ?? '' }}" maxlength="255" type="search"></label>@endif
-    <button class="admin-button" type="submit">Terapkan</button><a class="admin-clear" href="{{ url()->current() }}">Hapus filter</a>
+    <div class="filter-actions"><button class="admin-button" type="submit">Terapkan filter</button><x-filter-reset :href="url()->current()" />
+</div>
 </form>

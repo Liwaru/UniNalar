@@ -3,7 +3,7 @@
 @section('page-title', 'Dashboard Dosen')
 @section('page-subtitle', 'Ringkasan kelas yang diampu dan proses penilaian.')
 @section('content')
-    @if ($lecturer)<p class="student-card"><strong>{{ $lecturer->nama }}</strong> · {{ $lecturer->nidn ?? 'NIDN belum tersedia' }}</p>
+    @if ($lecturer)<p class="student-card"><strong>{{ $lecturer->nama }}</strong> · {{ $lecturer->nidn ?? 'NIDN belum tersedia' }}@if ($lecturer->nidn === \App\Services\DevelopmentDemoAccounts::SYNTHETIC_NIDN) <span class="text-muted">(identitas demonstrasi)</span>@endif</p>
     @include('dashboard.dosen.partials.filters', ['dashboardMode' => true])@endif
     @if (! $available)
         <div class="empty-state" role="status"><strong>Schema akademik belum tersedia</strong><span>Ringkasan ditampilkan setelah tabel pendukung tersedia.</span></div>

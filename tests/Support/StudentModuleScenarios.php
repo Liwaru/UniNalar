@@ -84,7 +84,8 @@ trait StudentModuleScenarios
         $rec = RekomendasiIntervensi::create(['analisis_risiko_id' => $foreign->id, 'judul' => 'SECRET-OTHER-RECOMMENDATION']);
         TindakLanjut::create(['rekomendasi_intervensi_id' => $rec->id, 'status' => 'SECRET-OTHER-FOLLOW']);
         $this->actingAs($d['users'][0]);
-        foreach (['analisis-risiko' => 'analyses', 'rekomendasi' => 'recommendations', 'tindak-lanjut' => 'followUps'] as $page => $variable) {
+        // Recommendations now paginate whole analyses; keep the same ownership and page-size assertions.
+        foreach (['analisis-risiko' => 'analyses', 'rekomendasi' => 'analysisPages', 'tindak-lanjut' => 'followUps'] as $page => $variable) {
             $url = route('dashboard.mahasiswa.'.$page, ['semester_id' => $d['semester']->id]);
             $this->get($url)->assertOk()->assertViewHas($variable, fn ($p) => $p->total() === 26 && $p->count() === 25)
                 ->assertDontSee('SECRET-OTHER-')->assertDontSee('PRIVATE-QA-NOTE');

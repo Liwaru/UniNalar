@@ -1,0 +1,19 @@
+/* Audited scroll surfaces: the document and the shared dashboard sidebar.
+ * Keep overflow and native scrolling unchanged. Tables, dialogs, dropdowns,
+ * form controls and other internal panels retain their scrollbar affordance.
+ */
+:is(
+    html:has(> body:is(.landing-page, .login-page, .student-dashboard)),
+    body:is(.landing-page, .login-page, .student-dashboard),
+    .student-dashboard .student-sidebar
+) {
+    scrollbar-width: none;
+}
+
+:is(
+    html:has(> body:is(.landing-page, .login-page, .student-dashboard)),
+    body:is(.landing-page, .login-page, .student-dashboard),
+    .student-dashboard .student-sidebar
+)::-webkit-scrollbar {
+    display: none;
+}

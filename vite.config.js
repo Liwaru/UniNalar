@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/js/landing.js',
                 'resources/css/login.css',
                 'resources/js/login.js',
+                'resources/js/form-feedback.js',
                 'resources/css/student-dashboard.css',
                 'resources/js/student-dashboard.js',
                 'resources/css/admin-academic.css',

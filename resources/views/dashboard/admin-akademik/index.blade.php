@@ -13,7 +13,7 @@
                     <div><dt>{{ $label }}</dt><dd><a href="{{ route('dashboard.admin-akademik.'.$key.'.index') }}">{{ $totals[$key] }}</a></dd></div>
                 @endforeach
             </dl>
-            <p class="admin-help">Jumlah mengikuti daftar data operasional. Data demo tidak disertakan.</p>
+            <p class="admin-help">@if (app()->environment('local'))Data demonstrasi sintetis. @endif Jumlah mengikuti catatan akademik yang tersedia.</p>
         </section>
         <section class="admin-panel" aria-labelledby="krs-summary-title">
             <div class="admin-panel-heading"><h2 id="krs-summary-title" class="academic-card-title">Status KRS</h2><a class="admin-button secondary" href="{{ route('dashboard.admin-akademik.krs-pengajuan.index') }}">Tinjau pengajuan</a></div>

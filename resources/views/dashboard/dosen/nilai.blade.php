@@ -50,7 +50,7 @@
                                             Final · {{ $grade->final_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}<br>Nilai terkunci
                                         @elseif ($grade)
                                             Belum final
-                                            <form method="POST" action="{{ route('dashboard.dosen.nilai.finalize', $grade->id) }}">@csrf<button type="submit">Finalisasi nilai</button></form>
+                                            <form method="POST" data-confirm-form inert action="{{ route('dashboard.dosen.nilai.finalize', $grade->id) }}">@csrf<x-confirm-action class="academic-action" title="Finalisasi nilai?" description="Nilai yang sudah final akan terkunci dan digunakan dalam perhitungan akademik. Periksa hasil penilaian sebelum melanjutkan." :record="$detail->krs->mahasiswa->nama.' · '.$class->mataKuliah->nama" label="Finalisasi nilai" /></form>
                                         @else
                                             Belum ada nilai
                                         @endif

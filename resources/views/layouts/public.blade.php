@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ asset('images/uninalar-favicon.png') }}">
     <meta name="theme-color" content="#f8fafc">
     <meta name="description" content="Pahami kondisi akademik mahasiswa melalui analisis risiko yang transparan dan rekomendasi intervensi yang terarah.">
     <title>@yield('title', 'UniNalar — Analisis Akademik yang Lebih Terarah')</title>

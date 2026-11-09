@@ -22,7 +22,7 @@ class DemoAccountAuthenticationTest extends TestCase
             ['username' => 'mahasiswa', 'password' => 'mahasiswa', 'level' => User::ROLE_MAHASISWA, 'dashboard' => 'dashboard.mahasiswa'],
             ['username' => 'dosen', 'password' => 'dosen', 'level' => User::ROLE_DOSEN, 'dashboard' => 'dashboard.dosen'],
             ['username' => 'admin', 'password' => 'admin', 'level' => User::ROLE_ADMIN_AKADEMIK, 'dashboard' => 'dashboard.admin-akademik'],
-            ['username' => 'owner', 'password' => 'owner', 'level' => User::ROLE_KAPRODI, 'dashboard' => 'dashboard.owner'],
+            ['username' => 'pimpinan', 'password' => 'pimpinan', 'level' => User::ROLE_KAPRODI, 'dashboard' => 'dashboard.owner'],
         ];
 
         foreach ($accounts as $account) {
@@ -69,13 +69,37 @@ class DemoAccountAuthenticationTest extends TestCase
 
         $this->seed(AcademicDemoSeeder::class);
         $this->assertSame(40, Mahasiswa::where('nim', 'like', 'DEMO%')->count());
-        $this->assertSame(4, User::whereIn('username', ['mahasiswa', 'dosen', 'admin', 'owner'])->count());
+        $this->assertSame(4, User::whereIn('username', ['mahasiswa', 'dosen', 'admin', 'pimpinan'])->count());
 
         $this->actingAs($studentUser)->get(route('area.admin-akademik'))->assertForbidden();
         $this->actingAs(User::where('username', 'admin')->firstOrFail())
             ->get(route('area.admin-akademik'))->assertOk();
-        $this->actingAs(User::where('username', 'owner')->firstOrFail())
+        $this->actingAs(User::where('username', 'pimpinan')->firstOrFail())
             ->get(route('area.kaprodi'))->assertOk();
+    }
+
+    public function test_synthetic_seeder_preserves_hashes_and_rejects_unrelated_existing_accounts(): void
+    {
+        $foreign = User::factory()->create(['username' => 'dosen', 'email' => 'unrelated@qa.example.test', 'level' => 2]);
+        $before = $foreign->getAttributes();
+        try {
+            $this->seed(AcademicDemoSeeder::class);
+            $this->fail('Seeder adopted an unrelated account');
+        } catch (\LogicException) {
+            $after = $foreign->fresh()->getAttributes();
+            ksort($before);
+            ksort($after);
+            $this->assertTrue($before === $after, 'Unrelated account attributes must remain identical.');
+            $this->assertSame(1, User::count());
+        }
+        $foreign->delete();
+        $this->seed(AcademicDemoSeeder::class);
+        $ids = User::orderBy('id')->pluck('id')->all();
+        $hashes = User::orderBy('id')->pluck('password')->all();
+        $this->seed(AcademicDemoSeeder::class);
+        $this->assertSame($ids, User::orderBy('id')->pluck('id')->all());
+        $this->assertTrue($hashes === User::orderBy('id')->pluck('password')->all(), 'Repeated seed must preserve password hashes.');
+        $this->assertFalse(User::where('username', 'owner')->exists());
     }
 
     public function test_role_area_routes_enforce_backend_levels_for_every_role(): void
@@ -143,7 +167,7 @@ class DemoAccountAuthenticationTest extends TestCase
                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.owner'],
             ],
             User::ROLE_KAPRODI => [
-                'role' => 'Kepala Program Studi',
+                'role' => 'Pimpinan Yayasan',
                 'dashboard' => 'dashboard.owner',
                 'allowed' => [],
                 'forbidden' => ['dashboard.mahasiswa.krs', 'dashboard.dosen', 'dashboard.admin-akademik'],

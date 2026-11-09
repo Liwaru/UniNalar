@@ -4,7 +4,7 @@
 @section('page-subtitle'){{ $submission->krs->mahasiswa->nim }} · {{ $submission->krs->mahasiswa->nama }}@endsection
 @section('content')
     <section class="admin-panel">
-        <dl class="admin-detail-grid">
+        <dl class="detail-fields">
             @foreach (['Semester' => $submission->krs->semester->kode, 'Program studi' => $submission->krs->mahasiswa->programStudi?->nama, 'Versi' => $submission->versi, 'Status versi' => ucfirst($submission->status), 'Status KRS saat ini' => ucfirst($submission->krs->status), 'Pengaju' => $submission->diajukanOleh?->name, 'Pengambil keputusan' => $submission->diputuskanOleh?->name, 'Diajukan (WIB)' => $submission->diajukan_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i'), 'Diputuskan (WIB)' => $submission->diputuskan_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i')] as $label => $value)<div><dt>{{ $label }}</dt><dd>{{ $value ?? 'Belum tersedia' }}</dd></div>@endforeach
         </dl>
         <h2 class="academic-card-title">Pilihan kelas saat diajukan</h2>

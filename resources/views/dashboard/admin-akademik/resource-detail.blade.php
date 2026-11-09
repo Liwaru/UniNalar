@@ -4,34 +4,36 @@
 @section('content')
     <section class="admin-panel">
         <div class="admin-panel-heading"><h2 class="academic-card-title">{{ $record->nama ?? $record->kode }}</h2><a class="admin-button secondary" href="{{ route($config['route'].'.edit', $record->id) }}">Ubah {{ strtolower($config['label']) }}</a></div>
-        <dl class="admin-detail-grid">
-            @foreach ($config['fields'] as $field => $definition)
-                @php
-                    $value = match ($field) {
-                        'program_studi_id' => $record->programStudi?->nama,
-                        'user_id' => $record->user?->username,
-                        default => $record->{$field},
-                    };
-                    if ($value instanceof \DateTimeInterface) $value = $value->format('d/m/Y');
-                    if (is_bool($value)) $value = $value ? 'Aktif' : 'Nonaktif';
-                @endphp
-                <div><dt>{{ $definition['label'] }}</dt><dd>{{ $value ?? 'Belum diisi' }}</dd></div>
-            @endforeach
-        </dl>
+        @php
+            $detailFields = [];
+            foreach ($config['fields'] as $field => $definition) {
+                if ($field === 'nama' || ($field === 'kode' && !isset($record->nama))) continue;
+                $value = match ($field) {
+                    'program_studi_id' => $record->programStudi?->nama,
+                    'user_id' => $record->user?->username,
+                    default => $record->{$field},
+                };
+                if ($value instanceof \DateTimeInterface) $value = $value->format($definition['type'] === 'datetime-local' ? 'd/m/Y H:i' : 'd/m/Y').($definition['type'] === 'datetime-local' ? ' WIB' : '');
+                $detailFields[$field === 'aktif' ? 'Status' : $definition['label']] = $value;
+            }
+        @endphp
+        <x-detail-fields :fields="$detailFields" />
         <h3 class="academic-card-title">Data terkait</h3>
         <dl class="admin-related-counts">
             @foreach ($config['protected_relations'] as $relation => $message)
-                <div><dt>{{ \Illuminate\Support\Str::headline($relation) }}</dt><dd>{{ $record->{\Illuminate\Support\Str::snake($relation).'_count'} }}</dd></div>
+                <div><dt>{{ ['krs' => 'KRS', 'mataKuliah' => 'Mata kuliah', 'kelasKuliah' => 'Kelas kuliah', 'analisisRisiko' => 'Analisis risiko'][$relation] ?? \Illuminate\Support\Str::headline($relation) }}:</dt><dd>{{ $record->{\Illuminate\Support\Str::snake($relation).'_count'} }}</dd></div>
             @endforeach
         </dl>
-        <p class="admin-help">Seluruh relasi diperiksa sebelum penghapusan, termasuk catatan yang tidak masuk daftar operasional.</p>
+        <p class="admin-help">Data yang masih digunakan dalam catatan akademik lain tidak dapat dihapus.</p>
+        <div class="detail-actions">
         @if ($config['key'] === 'program-studi')
-            <nav class="admin-related-links" aria-label="Data program studi">@foreach (['mahasiswa' => 'Mahasiswa', 'dosen' => 'Dosen', 'mata-kuliah' => 'Mata kuliah'] as $key => $label)<a href="{{ route('dashboard.admin-akademik.'.$key.'.index', ['program_studi_id' => $record->id]) }}">{{ $label }}</a>@endforeach</nav>
+            <nav class="detail-actions" aria-label="Data program studi">@foreach (['mahasiswa' => 'Mahasiswa', 'dosen' => 'Dosen', 'mata-kuliah' => 'Mata kuliah'] as $key => $label)<a class="academic-action is-secondary" href="{{ route('dashboard.admin-akademik.'.$key.'.index', ['program_studi_id' => $record->id]) }}">{{ $label }}</a>@endforeach</nav>
         @elseif (in_array($config['key'], ['semester', 'mata-kuliah', 'dosen'], true))
             @php($filter = ['semester' => 'semester_id', 'mata-kuliah' => 'mata_kuliah_id', 'dosen' => 'dosen_id'][$config['key']])
-            <a class="text-link" href="{{ route('dashboard.admin-akademik.kelas-kuliah.index', [$filter => $record->id]) }}">Lihat kelas terkait</a>
+            <a class="academic-action is-secondary" href="{{ route('dashboard.admin-akademik.kelas-kuliah.index', [$filter => $record->id]) }}">Lihat kelas terkait</a>
         @endif
-        <a class="text-link" href="{{ route($config['route'].'.index') }}">Kembali ke daftar</a>
+        <a class="academic-action is-secondary" href="{{ route($config['route'].'.index') }}">Kembali ke daftar</a>
+        </div>
     </section>
     @if ($krs !== null)
         <section class="admin-panel"><h2 class="academic-card-title">KRS mahasiswa</h2>

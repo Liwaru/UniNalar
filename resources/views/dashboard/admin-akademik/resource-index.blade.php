@@ -3,18 +3,19 @@
 @section('page-title', $config['title'])
 @section('content')
     <section class="admin-panel">
-        <div class="admin-panel-heading">
-            <div><p class="admin-intro">Kelola {{ strtolower($config['label']) }} operasional. Data demo tidak ditampilkan dalam daftar ini.</p></div>
+        <div class="admin-panel-heading admin-resource-heading">
             <a class="admin-button" href="{{ route($config['route'].'.create') }}">Tambah {{ $config['label'] }}</a>
         </div>
 
         <form class="admin-search" method="GET" action="{{ route($config['route'].'.index') }}">
-            <label for="admin-search">Cari data</label>
-            <input id="admin-search" type="search" name="q" maxlength="255" value="{{ $search }}" placeholder="Cari {{ strtolower($config['label']) }}">
+            <label class="admin-filter-field admin-filter-search" for="admin-search"><span>Cari data</span>
+                <input id="admin-search" type="search" name="q" maxlength="255" value="{{ $search }}" placeholder="Cari {{ strtolower($config['label']) }}">
+            </label>
             @include('dashboard.admin-akademik.partials.filters')
-            <button class="admin-button secondary" type="submit">Cari</button>
-            @if ($search !== '' || count(array_filter($filters ?? [], fn ($v) => $v !== null && $v !== '')) > 0)<a class="admin-clear" href="{{ route($config['route'].'.index') }}">Hapus pencarian</a>@endif
-        </form>
+            <div class="filter-actions"><button class="admin-button" type="submit">Cari</button>
+            @if ($search !== '' || count(array_filter($filters ?? [], fn ($v) => $v !== null && $v !== '')) > 0)<x-filter-reset :href="route($config['route'].'.index')" />@endif
+        </div>
+</form>
 
         <div class="admin-table-wrap" role="region" aria-label="Daftar data akademik" tabindex="0">
             <table class="admin-table">
@@ -31,16 +32,16 @@
                                 <td>{{ is_bool($value) ? ($value ? 'Aktif' : 'Nonaktif') : ($value ?? 'Belum tersedia') }}</td>
                             @endforeach
                             <td><div class="admin-row-actions">
-                                @if ($config['show'] ?? false)<a href="{{ route($config['route'].'.show', $record) }}">Detail</a>@endif
-                                <a href="{{ route($config['route'].'.edit', $record) }}">Ubah</a>
-                                <form method="POST" action="{{ route($config['route'].'.destroy', $record) }}" onsubmit="return confirm('Hapus data ini?')">
+                                @if ($config['show'] ?? false)<a class="admin-row-action" href="{{ route($config['route'].'.show', $record) }}">Detail</a>@endif
+                                <a class="admin-row-action is-edit" href="{{ route($config['route'].'.edit', $record) }}">Ubah</a>
+                                <form method="POST" action="{{ route($config['route'].'.destroy', $record) }}" data-confirm-form inert>
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="admin-delete">Hapus</button>
+                                    <x-confirm-action class="admin-row-action is-delete" :title="'Hapus '.$config['label'].'?'" description="Tindakan ini tidak dapat dibatalkan. Data yang masih digunakan dalam catatan akademik lain tidak dapat dihapus." :record="$record->nama ?? $record->kode ?? $record->kode_kelas" label="Hapus" tone="danger" />
                                 </form>
                             </div></td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ count($config['columns']) + 1 }}"><div class="admin-empty"><strong>Data operasional belum tersedia.</strong><span>Tambahkan data dari sumber resmi atau sesuaikan pencarian.</span></div></td></tr>
+                        <tr><td colspan="{{ count($config['columns']) + 1 }}"><div class="admin-empty"><strong>Data operasional belum tersedia.</strong><span>Tambahkan data atau sesuaikan pencarian.</span></div></td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -8,8 +8,9 @@
     <form class="monitoring-filters student-card" method="GET" action="{{ url()->current() }}">
         <label for="attendance-search">Nama atau NIM<input id="attendance-search" type="search" name="q" maxlength="255" value="{{ $filters['q'] ?? '' }}"></label>
         <label for="meeting-filter">Pertemuan<input id="meeting-filter" type="number" name="pertemuan_ke" min="1" max="65535" value="{{ $filters['pertemuan_ke'] ?? '' }}"></label>
-        <button type="submit">Terapkan filter</button><a class="text-link" href="{{ url()->current() }}">Hapus filter</a>
-    </form>
+        <div class="filter-actions"><button type="submit">Terapkan filter</button><x-filter-reset :href="url()->current()" />
+    </div>
+</form>
     <article class="student-card">
         @if (!$available)<div class="empty-state"><strong>Schema kehadiran belum tersedia</strong></div>
         @elseif ($records->isEmpty())<div class="empty-state"><strong>Catatan kehadiran belum tersedia</strong><span>Tidak ada catatan peserta resmi sesuai filter.</span></div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\UsernameNormalization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,8 @@ class LoginController extends Controller
             'username' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
         ]);
+
+        $credentials['username'] = UsernameNormalization::canonical($credentials['username']);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors([

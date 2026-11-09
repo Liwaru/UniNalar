@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ asset('images/uninalar-favicon.png') }}">
     <meta name="theme-color" content="#14213d">
     <meta name="description" content="Masuk ke UniNalar untuk mengakses analisis akademik dan pendampingan mahasiswa.">
     <title>Masuk · UniNalar</title>
@@ -44,7 +45,7 @@
                 <p class="form-description">Gunakan akun akademik yang diberikan kepada Anda.</p>
 
                 @if ($errors->any())
-                    <div class="form-alert" id="login-error" role="alert" aria-live="polite">
+                    <div class="form-alert" id="login-error" role="alert" tabindex="-1" data-validation-summary>
                         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 6v4m0 3h.01"/></svg>
                         <span>{{ $errors->first() }}</span>
                     </div>
@@ -64,7 +65,7 @@
                             placeholder="Masukkan username"
                             @error('username') aria-invalid="true" aria-describedby="login-error" @enderror
                             required
-                            autofocus
+                            @if (!$errors->any()) autofocus @endif
                         >
                     </div>
 
@@ -102,6 +103,7 @@
                     <button class="submit-button" type="submit">
                         <span>Masuk</span>
                     </button>
+                    <p class="submission-status" role="status" data-submit-status></p>
                 </form>
 
                 <p class="account-note">Akun dikelola oleh pihak akademik UniNalar.</p>

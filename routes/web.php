@@ -9,6 +9,7 @@ use App\Http\Controllers\DosenDashboardController;
 use App\Http\Controllers\DosenKelasController;
 use App\Http\Controllers\DosenNilaiController;
 use App\Http\Controllers\DosenProfilController;
+use App\Http\Controllers\MahasiswaAiController;
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\MahasiswaKrsController;
 use App\Http\Controllers\OwnerDashboardController;
@@ -52,6 +53,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/krs/ajukan', [MahasiswaKrsController::class, 'submit'])->middleware('throttle:10,1')->name('krs.submit');
         Route::get('/nilai', [MahasiswaDashboardController::class, 'nilai'])->name('nilai');
         Route::get('/kehadiran', [MahasiswaDashboardController::class, 'kehadiran'])->name('kehadiran');
+        Route::post('/analisis-risiko/ai', [MahasiswaAiController::class, 'store'])->middleware('throttle:6,1')->name('analisis-risiko.ai');
         Route::get('/analisis-risiko', [MahasiswaDashboardController::class, 'analisisRisiko'])->name('analisis-risiko');
         Route::get('/rekomendasi', [MahasiswaDashboardController::class, 'rekomendasi'])->name('rekomendasi');
         Route::get('/tindak-lanjut', [MahasiswaDashboardController::class, 'tindakLanjut'])->name('tindak-lanjut');

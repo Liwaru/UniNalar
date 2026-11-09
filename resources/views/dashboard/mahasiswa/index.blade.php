@@ -15,7 +15,7 @@
 @section('content')
     @php
         $riskCategory = $analisisTerbaru?->kategori;
-        $riskClass = $riskCategory ? strtolower(str_replace([' ', '_'], '-', $riskCategory)) : '';
+        $riskClass = $riskCategory ? strtolower(str_replace([' ', '_'], '-', $riskCategory)) : 'is-unclassified';
     @endphp
     <section class="student-section" aria-labelledby="summary-title">
         <div class="student-section-heading"><div><h2 id="summary-title">Ringkasan akademik</h2><p>Ringkasan dari catatan database yang tertaut ke profil Anda.</p></div></div>
@@ -50,7 +50,7 @@
             </article>
             <article class="summary-card">
                 <div class="summary-card-top"><span>Status risiko</span><span class="summary-icon amber"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3.8 18a1.4 1.4 0 0 0 1.2 2h14a1.4 1.4 0 0 0 1.2-2z"/><path d="M12 9v4m0 3h.01"/></svg></span></div>
-                @if ($analisisTerbaru)<div class="summary-value"><span class="risk-badge {{ $riskClass }}">{{ str_replace(['_', '-'], ' ', $riskCategory) }}</span></div><div class="summary-note">Analisis tercatat {{ $analisisTerbaru->dianalisis_pada->format('d/m/Y') }}</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Belum ada analisis risiko tercatat.</div>@endif
+                @if ($analisisTerbaru)<div class="summary-value"><span class="risk-badge {{ $riskClass }}">{{ $riskCategory ? str_replace(['_', '-'], ' ', $riskCategory) : 'Belum diklasifikasikan' }}</span></div><div class="summary-note">Analisis tercatat {{ $analisisTerbaru->dianalisis_pada->format('d/m/Y') }}</div>@else<div class="summary-value is-empty">Belum tersedia</div><div class="summary-note">Belum ada analisis risiko tercatat.</div>@endif
                 <a class="text-link" href="{{ route('dashboard.mahasiswa.analisis-risiko') }}">Lihat analisis</a>
             </article>
         </div>
@@ -87,7 +87,17 @@
         <div class="student-section-heading"><div><h2 id="trend-title">Perkembangan nilai</h2><p>Rata-rata nilai angka final per semester dari KRS yang disetujui.</p></div></div>
         <article class="student-card">
             @if ($grafik['tersedia'])
-                <div class="chart-wrap"><canvas id="academicTrendChart" aria-label="Grafik rata-rata nilai per semester" role="img"></canvas></div>
+                <div class="chart-wrap"><canvas id="academicTrendChart" aria-label="Grafik rata-rata nilai per semester" aria-describedby="academic-trend-table" role="img"></canvas></div>
+                <details class="trend-data">
+                    <summary>Lihat data nilai per semester</summary>
+                    <div class="academic-table-wrap" role="region" aria-label="Data perkembangan nilai" tabindex="0">
+                        <table class="data-table" id="academic-trend-table">
+                            <caption>Rata-rata nilai angka final, bukan IPS atau IPK.</caption>
+                            <thead><tr><th scope="col">Semester</th><th scope="col">Rata-rata nilai</th></tr></thead>
+                            <tbody>@foreach ($grafik['labels'] as $index => $label)<tr><th scope="row">{{ $label }}</th><td>{{ $grafik['nilai'][$index] !== null ? number_format($grafik['nilai'][$index], 2, ',', '.') : 'Belum ada nilai final' }}</td></tr>@endforeach</tbody>
+                        </table>
+                    </div>
+                </details>
                 <script id="academicTrendData" type="application/json">{!! json_encode($grafik, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
             @else
                 <div class="empty-state"><strong>Riwayat nilai belum mencukupi</strong><span>Grafik tersedia setelah nilai angka tercatat setidaknya pada dua semester.</span></div>

@@ -1,7 +1,8 @@
 @if ($gradeMode ?? false)
 <form class="monitoring-filters student-card" method="GET" action="{{ url()->current() }}">
     <label for="grade-semester-filter">Semester<select id="grade-semester-filter" name="semester_id"><option value="">Semua semester</option>@foreach ($semesters as $semester)<option value="{{ $semester->id }}" @selected((string) ($filters['semester_id'] ?? '') === (string) $semester->id)>{{ $semester->kode }}</option>@endforeach</select></label>
-    <button type="submit">Pilih semester</button>
+    <div class="filter-actions"><button type="submit">Pilih semester</button>
+</div>
 </form>
 @endif
 <form class="monitoring-filters student-card" method="GET" action="{{ url()->current() }}">
@@ -18,6 +19,7 @@
     @if (($participantMode ?? false) || ($gradeMode ?? false))
         <label for="grade-filter">Status nilai<select id="grade-filter" name="status_nilai"><option value="">Semua status</option>@foreach (['belum_dinilai' => 'Belum dinilai', 'draft' => 'Draft', 'final' => 'Final'] as $key => $label)<option value="{{ $key }}" @selected(($filters['status_nilai'] ?? '') === $key)>{{ $label }}</option>@endforeach</select></label>
     @endif
-    <button type="submit">Terapkan filter</button>
-    <a class="text-link" href="{{ url()->current() }}">Hapus filter</a>
+    <div class="filter-actions"><button type="submit">Terapkan filter</button>
+    <x-filter-reset :href="url()->current()" />
+</div>
 </form>

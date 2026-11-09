@@ -21,7 +21,7 @@
                         @foreach ($activeKrs->details as $detail)
                             @php($course = $detail->kelasKuliah?->mataKuliah)
                             @if ($course)<tr><td><strong>{{ $course->nama }}</strong></td><td>{{ $course->kode }}</td><td>{{ $detail->kelasKuliah?->kode_kelas ?? '—' }}</td><td>{{ $course->sks }}</td><td>
-                                @if ($registrationOpen && in_array($activeKrs->status, ['draft', 'ditolak'], true))<form method="POST" action="{{ route('dashboard.mahasiswa.krs.detail.destroy', $detail) }}">@csrf @method('DELETE')<button type="submit">Hapus pilihan</button></form>@else {{ $activeKrs->status }} @endif
+                                @if ($registrationOpen && in_array($activeKrs->status, ['draft', 'ditolak'], true))<form method="POST" data-confirm-form inert action="{{ route('dashboard.mahasiswa.krs.detail.destroy', $detail) }}">@csrf @method('DELETE')<x-confirm-action class="academic-action is-danger" title="Hapus pilihan kelas?" description="Kelas ini akan dihapus dari pilihan KRS yang belum disetujui." :record="$detail->kelasKuliah->mataKuliah->nama" label="Hapus pilihan" tone="danger" /></form>@else {{ $activeKrs->status }} @endif
                             </td></tr>@endif
                         @endforeach
                     </tbody></table></div>
@@ -40,12 +40,14 @@
                                     <option value="{{ $class->id }}" @selected((string) old('kelas_kuliah_id') === (string) $class->id) @disabled($class->kapasitas !== null && $class->reserved_places >= $class->kapasitas)>{{ $class->mataKuliah->kode }} · {{ $class->mataKuliah->nama }} · Kelas {{ $class->kode_kelas }} · {{ $class->mataKuliah->sks }} SKS · {{ $class->kapasitas === null ? 'Tanpa batas kapasitas' : ($class->reserved_places >= $class->kapasitas ? 'Kelas penuh' : 'Sisa '.max(0, $class->kapasitas - $class->reserved_places).' kursi') }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit">Tambahkan ke KRS</button>
+                            <button type="submit" class="academic-action">Tambahkan ke KRS</button>
                         </form>
+                    @elseif ($activeKrs?->details->isNotEmpty())
+                        <div class="empty-state mt-3"><strong>Tidak ada kelas tambahan yang tersedia</strong><span>Kelas yang sudah dipilih tercantum di atas. Anda dapat mengajukan KRS jika pilihan sudah sesuai.</span></div>
                     @else
                         <div class="empty-state mt-3"><strong>Kelas operasional belum tersedia</strong><span>Katalog kelas aktif untuk program studi Anda belum tercatat.</span></div>
                     @endif
-                    @if ($activeKrs?->details->isNotEmpty())<form method="POST" action="{{ route('dashboard.mahasiswa.krs.submit') }}" class="mt-3">@csrf<button type="submit">Ajukan KRS</button></form>@endif
+                    @if ($activeKrs?->details->isNotEmpty())<form method="POST" data-confirm-form inert action="{{ route('dashboard.mahasiswa.krs.submit') }}" class="mt-3">@csrf<x-confirm-action class="academic-action" title="Ajukan KRS?" description="Pilihan kelas akan dikirim ke Admin Akademik untuk ditinjau. Periksa kelas dan beban studi Anda." :record="$activeSemester->kode ?? 'Pilihan KRS Anda'" label="Ajukan KRS" /></form>@endif
                 @elseif ($activeKrs && $activeKrs->status === 'menunggu')
                     <p role="status">Pengajuan sedang menunggu keputusan Admin Akademik.</p>
                 @elseif ($activeKrs && $activeKrs->status === 'disetujui')

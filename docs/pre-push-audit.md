@@ -1,10 +1,22 @@
 # Final pre-push audit UniNalar
 
+> Path `/path/to/UniNalar-main`, `~`, `<windows-user-home>` dan `<runtime-tag>`
+> adalah placeholder publik pengganti identitas mesin pada bukti lokal. Ganti sesuai
+> workspace/runtime development yang sudah diverifikasi sebelum memakai contoh perintah.
+
+> Untuk working tree saat ini, gunakan [review precommit terbaru](final-git-precommit-review.md).
+> Tidak ada staging, commit atau push pada review terbaru tersebut.
+
+> Snapshot sebelum integrasi Groq/WSL. Setelah laporan ini dibuat, pekerjaan baru
+> menambah source, migration, tes dan dokumentasi yang belum di-stage. Verdict dan
+> allowlist 114 file di bawah berlaku untuk snapshot audit sebelumnya, bukan seluruh
+> working tree terbaru. Audit/staging ulang diperlukan sebelum commit integrasi.
+
 Tanggal: 8 November 2026. Verdict akhir: **SAFE TO COMMIT** untuk perubahan Git yang diaudit dan di-stage. Status awal NEEDS REVIEW telah diselesaikan melalui cleanup index dan aturan ignore spesifik. Ini bukan persetujuan deployment atau klaim kesiapan produksi.
 
 ## Git dan hasil akhir staging
 
-- Workspace `/home/hendra_huang/projects/UniNalar-main`; branch `main`; HEAD `02a2be7d7e181242c464490d1e6ff1bcc7e17e0f`.
+- Workspace `/path/to/UniNalar-main`; branch `main`; HEAD `02a2be7d7e181242c464490d1e6ff1bcc7e17e0f`.
 - Remote fetch/push `https://github.com/Liwaru/UniNalar.git`; tracking `origin/main`, ahead/behind lokal 0/0. Tidak fetch; keadaan remote terbaru tidak diverifikasi.
 - Baseline audit pertama: 48 modified + 64 file baru. Laporan audit menambah satu file menjadi **113** kandidat. Perubahan `.gitignore` pada tindak lanjut ini membuat allowlist **114 file**: **49 modified + 65 added**.
 - Cleanup menambahkan **168 deleted dari index saja**; total staged **282 path** (49 M, 65 A, 168 D). D berarti keluar dari snapshot Git berikutnya; bukan penghapusan file fisik.
@@ -87,7 +99,7 @@ Lockfile tidak berubah:
 Allowlist staging diperbarui pada `/tmp/uninalar-pre-push-allowlist.txt` (114 path A/M). Daftar cleanup ada di `/tmp/uninalar-pre-push-exclude-tracked.txt` (168 path D). Keduanya inventaris lokal sementara, tidak di-commit; salinannya lengkap di bagian berikut. Staging **sudah dilakukan**, termasuk cleanup. Jika ada perubahan baru, periksa ulang diff sebelum commit.
 
 ```sh
-cd /home/hendra_huang/projects/UniNalar-main
+cd /path/to/UniNalar-main
 git diff --cached --check
 git diff --cached --stat
 git diff --cached --name-status

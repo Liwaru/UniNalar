@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         User::firstOrCreate(
             ['email' => 'test@example.com'],
-            ['name' => 'Test User', 'password' => Str::random(64), 'level' => User::ROLE_ADMIN_AKADEMIK],
+            ['name' => 'Test User', 'username' => 'test_admin', 'password' => Str::random(64), 'level' => User::ROLE_ADMIN_AKADEMIK],
         );
 
         $this->call(AcademicDemoSeeder::class);

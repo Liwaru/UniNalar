@@ -1,7 +1,7 @@
 # Standar UI/UX UniNalar
 
 Standar wajib untuk seluruh pengembangan dan perbaikan halaman: Mahasiswa,
-Dosen, Admin Akademik, Owner/Kaprodi, login, dan landing page.
+Dosen, Admin Akademik, Pimpinan Yayasan, login, dan landing page.
 
 Prioritas: **fungsi → kejelasan → penyempurnaan visual**. Targetnya adalah sistem
 informasi akademik yang natural, profesional, matang, dan efisien untuk perguruan
@@ -55,6 +55,18 @@ tinggi. Hindari tampilan template AI generik.
 - Fokus keyboard harus terlihat, urutan navigasi masuk akal, teks tidak terpotong,
   dan sidebar atau elemen lain tidak menutupi konten.
 
+## Implementasi token bersama
+
+Token identitas dan kontrol berada pada `resources/css/design-tokens.css`, diimpor
+oleh entry public/login/dashboard dan app. Alias Bootstrap body mengikuti token
+tersebut. CSS Admin hanya menambah layout pada base dashboard; jangan mengimpor
+ulang atau mengganti font per role. Kontrol akademik utama memakai kontrak bersama
+di `student-dashboard.css`: minimum 44px, radius 8px, focus ring 3px. Hero CTA dan
+pagination ringkas boleh memakai ukuran sesuai fungsi. Tabel, status, label dan
+Chart.js memakai token yang sama; hindari menambah warna literal untuk fungsi yang
+sudah memiliki token. Rincian implementasi dan batas pengujian ada pada
+[audit desain](final-design-system-mcp-audit.md).
+
 ## Verifikasi setiap halaman yang dibuat atau diubah
 
 1. Bandingkan pola visual dan istilah dengan halaman terkait di role yang sama
@@ -75,3 +87,13 @@ tinggi. Hindari tampilan template AI generik.
 Dokumen ini menetapkan standar untuk pekerjaan berikutnya. Pencatatannya sendiri
 tidak menyatakan seluruh halaman existing telah diaudit ulang atau memenuhi semua
 kriteria visual.
+
+## Referensi tambahan
+
+Skill lokal **UI/UX Pro Max** dapat dipakai untuk checklist audit, aksesibilitas,
+interaksi dan panduan implementasi yang sesuai dengan stack existing. Dokumen ini,
+identitas UniNalar dan kebutuhan pengguna tetap menjadi pedoman utama. Dataset
+skill bukan spesifikasi fitur, aturan akademik atau alasan untuk mengganti palet,
+tipografi, framework, workflow atau layout yang sudah berfungsi. Gunakan temuan
+browser dan masalah pengguna sebagai dasar perbaikan terarah. Skill merupakan alat
+pengembangan opsional, bukan dependency runtime atau sumber kelas CSS aplikasi.

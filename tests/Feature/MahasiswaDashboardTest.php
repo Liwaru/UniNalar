@@ -302,6 +302,8 @@ class MahasiswaDashboardTest extends TestCase
                 'email' => 'updated@example.test',
                 'no_telepon' => '081299999999',
                 'nim' => 'CHANGED-NIM',
+                'nama' => 'CHANGED-NAME',
+                'angkatan' => 1900,
                 'program_studi_id' => 9999,
                 'status' => 'nonaktif',
             ])
@@ -311,17 +313,27 @@ class MahasiswaDashboardTest extends TestCase
         $this->assertDatabaseHas('mahasiswa', [
             'id' => $profile->id,
             'nim' => 'CONTACT-001',
+            'nama' => 'Mahasiswa Kontak',
+            'angkatan' => 2025,
             'email' => 'updated@example.test',
             'no_telepon' => '081299999999',
             'program_studi_id' => $program->id,
             'status' => 'aktif',
         ]);
         $this->assertDatabaseHas('mahasiswa', ['nim' => 'CONTACT-002', 'email' => 'other@example.test']);
+        $this->get(route('dashboard.mahasiswa.profil'))->assertOk()
+            ->assertSee('Informasi kontak berhasil diperbarui.')
+            ->assertSee('value="updated@example.test"', false);
 
         $this->actingAs($student)->put(route('dashboard.mahasiswa.profil.update'), [
             'email' => 'other@example.test',
             'no_telepon' => '0812',
         ])->assertSessionHasErrors('email');
+        $this->get(route('dashboard.mahasiswa.profil'))->assertOk()
+            ->assertSee('Periksa kembali isian Anda.')
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('value="other@example.test"', false)
+            ->assertSee('value="0812"', false);
     }
 
     public function test_demo_profiles_and_other_roles_cannot_update_student_contacts(): void

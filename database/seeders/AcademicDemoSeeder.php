@@ -17,6 +17,7 @@ use App\Models\Semester;
 use App\Models\TindakLanjut;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AcademicDemoSeeder extends Seeder
@@ -27,6 +28,11 @@ class AcademicDemoSeeder extends Seeder
             throw new \LogicException('AcademicDemoSeeder berisi data sintetis dan hanya boleh dijalankan pada environment local atau testing.');
         }
 
+        DB::transaction(fn () => $this->seedSyntheticData());
+    }
+
+    private function seedSyntheticData(): void
+    {
         $studentCount = max(1, min(100, (int) env('UNINLAR_DUMMY_STUDENTS', 40)));
         $now = now();
 
@@ -34,9 +40,17 @@ class AcademicDemoSeeder extends Seeder
             ['name' => 'Mahasiswa Demo', 'username' => 'mahasiswa', 'email' => 'mahasiswa@demo.uninlar.test', 'password' => 'mahasiswa', 'level' => User::ROLE_MAHASISWA],
             ['name' => 'Dosen Demo', 'username' => 'dosen', 'email' => 'dosen@demo.uninlar.test', 'password' => 'dosen', 'level' => User::ROLE_DOSEN],
             ['name' => 'Admin Akademik Demo', 'username' => 'admin', 'email' => 'admin@demo.uninlar.test', 'password' => 'admin', 'level' => User::ROLE_ADMIN_AKADEMIK],
-            ['name' => 'Kepala Program Studi Demo', 'username' => 'owner', 'email' => 'owner@demo.uninlar.test', 'password' => 'owner', 'level' => User::ROLE_KAPRODI],
+            ['name' => 'Pimpinan Yayasan Demo', 'username' => 'pimpinan', 'email' => 'owner@demo.uninlar.test', 'password' => 'pimpinan', 'level' => User::ROLE_KAPRODI],
         ])->mapWithKeys(function (array $account): array {
-            $user = User::updateOrCreate(
+            $legacy = User::where('username', 'owner')->where('email', 'owner@demo.uninlar.test')->where('level', 4)->first();
+            if ($account['username'] === 'pimpinan' && $legacy && ! User::where('username', 'pimpinan')->exists()) {
+                $legacy->forceFill(['username' => 'pimpinan', 'name' => $account['name'], 'password' => $account['password'], 'remember_token' => null])->save();
+            }
+            $current = User::where('username', $account['username'])->first();
+            if ($current && ($current->email !== $account['email'] || $current->level !== $account['level'])) {
+                throw new \LogicException('Synthetic seeder cannot overwrite an unrelated development account.');
+            }
+            $user = User::firstOrCreate(
                 ['username' => $account['username']],
                 [
                     'name' => $account['name'],

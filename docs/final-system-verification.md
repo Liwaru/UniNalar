@@ -1,12 +1,26 @@
 # Verifikasi akhir sistem UniNalar
 
+> Path `/path/to/UniNalar-main`, `~`, `<windows-user-home>` dan `<runtime-tag>`
+> adalah placeholder publik pengganti identitas mesin pada bukti lokal. Ganti sesuai
+> workspace/runtime development yang sudah diverifikasi sebelum memakai contoh perintah.
+
+> Audit dual-MCP aktual terbaru: [full-system QA](final-full-system-dual-mcp-qa.md).
+> Review working tree sebelum staging: [precommit review](final-git-precommit-review.md).
+
+> QA desain dan regresi terbaru: [audit konsistensi desain/MCP](final-design-system-mcp-audit.md).
+> Angka pada baseline historis di bawah tidak menggantikan hasil laporan tersebut.
+
+> Baseline sebelum integrasi Groq/WSL. Perubahan dan QA yang lebih baru dicatat
+> pada [integrasi Groq](groq-ai-integration.md). Penambahan satu POST analisis
+> membuat endpoint akademik menjadi 85; angka hasil QA di bawah tetap historis.
+
 Laporan ini memisahkan fitur terdefinisi, bukti lokal aktual, keputusan akademik
 yang belum tersedia, dan persyaratan rilis. Hasil sesi Mahasiswa/Dosen/Admin/Owner
 sebelumnya merupakan baseline historis, bukan hasil final pada laporan ini.
 
 ## 1. Git dan workspace
 
-PASS: workspace WSL `/home/hendra_huang/projects/UniNalar-main`, branch `main`,
+PASS: workspace WSL `/path/to/UniNalar-main`, branch `main`,
 HEAD `02a2be7d7e181242c464490d1e6ff1bcc7e17e0f`, remote
 `https://github.com/Liwaru/UniNalar.git`. Working tree memang sudah berisi seluruh
 implementasi empat role yang belum di-commit. Semua dipertahankan; tidak ada pull,

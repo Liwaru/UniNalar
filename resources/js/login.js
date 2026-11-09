@@ -1,3 +1,4 @@
+import './form-feedback';
 const passwordInput = document.getElementById('password');
 const passwordToggle = document.querySelector('.password-toggle');
 

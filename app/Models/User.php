@@ -3,7 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\UsernameNormalization;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,6 +53,11 @@ class User extends Authenticatable
         ];
     }
 
+    protected function username(): Attribute
+    {
+        return Attribute::make(set: fn ($value) => UsernameNormalization::canonical($value));
+    }
+
     public function mahasiswa(): HasOne
     {
         return $this->hasOne(Mahasiswa::class);
@@ -73,6 +80,6 @@ class User extends Authenticatable
         self::ROLE_MAHASISWA => 'Mahasiswa',
         self::ROLE_DOSEN => 'Dosen',
         self::ROLE_ADMIN_AKADEMIK => 'Admin Akademik',
-        self::ROLE_KAPRODI => 'Kepala Program Studi',
+        self::ROLE_KAPRODI => 'Pimpinan Yayasan',
     ];
 }

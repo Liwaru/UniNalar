@@ -43,7 +43,7 @@ class OwnerDashboardController extends Controller
             ];
             if ($data->has('analisis_risiko')) {
                 $analyses = $data->analyses($filters);
-                $riskDistribution = (clone $analyses)->orderByDesc('dianalisis_pada')->orderByDesc('id')->get(['id', 'mahasiswa_id', 'kategori'])->unique('mahasiswa_id')->countBy('kategori');
+                $riskDistribution = (clone $analyses)->orderByDesc('dianalisis_pada')->orderByDesc('id')->get(['id', 'mahasiswa_id', 'kategori'])->unique('mahasiswa_id')->countBy(fn ($analysis) => $analysis->kategori ?? 'Belum diklasifikasikan');
                 if ($data->has('rekomendasi_intervensi')) {
                     $recommendations = $data->recommendations($filters)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
                     if ($data->has('tindak_lanjut')) {

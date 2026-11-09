@@ -12,8 +12,9 @@
                 @include('dashboard.admin-akademik.partials.filters')
                 <label class="admin-filter-field" for="krs-status"><span>Status</span><select id="krs-status" name="status">@foreach (['menunggu' => 'Menunggu', 'disetujui' => 'Disetujui', 'ditolak' => 'Ditolak', 'semua' => 'Semua status'] as $key => $label)<option value="{{ $key }}" @selected($filters['status'] === $key)>{{ $label }}</option>@endforeach</select></label>
                 <label class="admin-filter-field" for="krs-scope"><span>Cakupan</span><select id="krs-scope" name="cakupan"><option value="terbaru" @selected($filters['cakupan'] === 'terbaru')>Versi terbaru per KRS</option><option value="semua_versi" @selected($filters['cakupan'] === 'semua_versi')>Semua versi</option></select></label>
-                <button class="admin-button secondary" type="submit">Terapkan filter</button><a class="admin-clear" href="{{ route('dashboard.admin-akademik.krs-pengajuan.index') }}">Hapus filter</a>
-            </form>
+                <div class="filter-actions"><button class="admin-button" type="submit">Terapkan filter</button><x-filter-reset :href="route('dashboard.admin-akademik.krs-pengajuan.index')" />
+            </div>
+</form>
             <div class="admin-table-wrap" role="region" aria-label="Daftar pengajuan KRS" tabindex="0"><table class="admin-table"><thead><tr><th>Mahasiswa</th><th>Semester</th><th>Versi</th><th>Diajukan (WIB)</th><th>Ringkasan pengajuan</th><th>Keputusan</th></tr></thead><tbody>
                 @forelse ($submissions as $submission)
                     <tr><td class="academic-identity">{{ $submission->krs->mahasiswa->nama }}<br><span class="academic-code">{{ $submission->krs->mahasiswa->nim }}</span></td><td>{{ $submission->krs->semester->kode }}</td><td>{{ $submission->versi }}</td><td>{{ $submission->diajukan_pada?->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</td><td><a href="{{ route('dashboard.admin-akademik.krs-pengajuan.show', $submission->id) }}">Detail pengajuan</a><ul class="admin-snapshot-list">@foreach (($submission->snapshot_kelas['kelas'] ?? []) as $class)<li>{{ $class['kode_mata_kuliah'] ?? '—' }} · {{ $class['nama_mata_kuliah'] ?? 'Nama tidak tersedia' }} · {{ $class['sks'] ?? '—' }} SKS</li>@endforeach</ul></td><td>@include('dashboard.admin-akademik.partials.decision')</td></tr>

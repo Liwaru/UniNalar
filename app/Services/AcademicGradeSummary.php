@@ -25,17 +25,42 @@ class AcademicGradeSummary
             return $students->mapWithKeys(fn ($student) => [$student->id => $empty]);
         }
 
-        $grades = Nilai::query()->whereNotNull('final_at')
-            ->whereIn('krs_detail_id', OperationalAcademicData::approvedDetails()
-                ->whereHas('krs', fn (Builder $krs) => $krs->whereIn('mahasiswa_id', $students->pluck('id')))
-                ->select('krs_detail.id'))
-            ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
-            ->orderByDesc('final_at')->orderByDesc('id')->get()
-            ->groupBy(fn (Nilai $grade) => $grade->krsDetail->krs->mahasiswa_id);
+        $grades = $this->finalGrades($students)->groupBy(fn (Nilai $grade) => $grade->krsDetail->krs->mahasiswa_id);
 
         return $students->mapWithKeys(fn ($student) => [
             $student->id => isset($grades[$student->id]) ? $this->summarize($grades[$student->id], $semesterId) : $empty,
         ]);
+    }
+
+    /** Published academic records, not AI prose or historical analysis snapshots. */
+    public function historyForStudent(Mahasiswa $student): Collection
+    {
+        if (! collect(['users', 'program_studi', 'mahasiswa', 'dosen', 'semester', 'mata_kuliah', 'kelas_kuliah', 'krs', 'krs_detail', 'nilai'])
+            ->every(fn ($table) => Schema::hasTable($table)) || ! Schema::hasColumn('nilai', 'final_at')) {
+            return collect();
+        }
+        $grades = $this->finalGrades(collect([$student]));
+        $periodKey = fn ($semester) => sprintf('%s-%03d', $semester->tahun_ajaran, $semester->periode);
+        $semesters = $grades->map(fn ($grade) => $grade->krsDetail->krs->semester)->filter()
+            ->unique('id')->sortBy($periodKey);
+
+        return $semesters->map(function ($semester) use ($grades, $periodKey) {
+            $throughSemester = $grades->filter(fn ($grade) => $grade->krsDetail->krs->semester
+                && $periodKey($grade->krsDetail->krs->semester) <= $periodKey($semester));
+            $summary = $this->summarize($throughSemester, $semester->id);
+
+            return ['semester' => $semester->kode, 'ips' => $summary['ips'], 'ipk' => $summary['ipk']];
+        })->values();
+    }
+
+    private function finalGrades(Collection $students): Collection
+    {
+        return Nilai::query()->whereNotNull('final_at')
+            ->whereIn('krs_detail_id', OperationalAcademicData::approvedDetails()
+                ->whereHas('krs', fn (Builder $krs) => $krs->whereIn('mahasiswa_id', $students->pluck('id')))
+                ->select('krs_detail.id'))
+            ->with(['krsDetail.krs.semester', 'krsDetail.kelasKuliah.mataKuliah'])
+            ->orderByDesc('final_at')->orderByDesc('id')->get();
     }
 
     private function summarize(Collection $grades, ?int $semesterId = null): array
